@@ -6,7 +6,10 @@
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
     "scheme": "bianco",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "experiments": {
       "tsconfigPaths": true
     },
@@ -36,18 +39,13 @@
       "softwareKeyboardLayoutMode": "pan",
       "predictiveBackGestureEnabled": false
     },
-    
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "da376216-d29c-49c4-9d4e-b3f75f036b55"
+        "projectId": "36162c2f-7925-496d-b3fd-aa091cc155e3"
       }
-    },
-    "owner": "thomino",
-    "updates": {
-      "url": "https://u.expo.dev/da376216-d29c-49c4-9d4e-b3f75f036b55"
     }
   }
 }
