@@ -1,11 +1,11 @@
 {
   "expo": {
     "newArchEnabled": true,
-    "name": "Picaso",
-    "slug": "picaso",
+    "name": "bianco.ai",
+    "slug": "bianco-ai",
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
-    "scheme": "picaso",
+    "scheme": "bianco",
     "platforms": ["ios", "android"],
     "experiments": {
       "tsconfigPaths": true
