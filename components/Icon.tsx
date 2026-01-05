@@ -80,7 +80,15 @@ const Icon: React.FC<IconProps> = ({
         className || ''
     ].filter(Boolean).join(' ').trim();
 
-    const IconComponent = LucideIcons[name] as React.ComponentType<LucideProps>;
+    const IconComponent = LucideIcons[name] as React.ComponentType<LucideProps> | undefined;
+
+    // Safety check: if icon doesn't exist, render nothing or a fallback
+    if (!IconComponent) {
+        if (__DEV__) {
+            console.warn(`Icon "${name}" not found in lucide-react-native`);
+        }
+        return <View style={style} className={classes || undefined} />;
+    }
 
     const content = (
         <View style={style} className={classes || undefined}>
@@ -118,5 +126,7 @@ const Icon: React.FC<IconProps> = ({
     return content;
 };
 
+// Support both named and default imports
+export { Icon };
 export default Icon;
 export type { IconName };

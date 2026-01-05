@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Pressable, Animated, Switch as RNSwitch, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
+import { View, Pressable, Animated, Switch as RNSwitch, TouchableOpacity, StyleProp, ViewStyle, Platform } from 'react-native';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import ThemedText from '../ThemedText';
 import Icon, { IconName } from '../Icon';
 import useThemeColors from '@/app/contexts/ThemeColors';
+
+// Check if liquid glass is available (iOS 26+)
+const useGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
 
 interface SwitchProps {
   value?: boolean;
@@ -76,9 +80,29 @@ const Switch: React.FC<SwitchProps> = ({
       style={style}
     >
       {icon && (
-        <View className="w-12 h-12 rounded-full  mr-4 items-center justify-center">
-          <Icon name={icon} size={20} color={colors.text} />
+        useGlass ? (
+          <GlassView 
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              marginRight: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            glassEffectStyle="regular"
+            tintColor={colors.accentLight}
+          >
+            <Icon name={icon} size={20} color={colors.iconAccent} />
+          </GlassView>
+        ) : (
+          <View 
+            className="w-12 h-12 rounded-full mr-4 items-center justify-center"
+            style={{ backgroundColor: colors.accentLight }}
+          >
+            <Icon name={icon} size={20} color={colors.iconAccent} />
         </View>
+        )
       )}
       
       <View className="flex-1">
@@ -93,24 +117,71 @@ const Switch: React.FC<SwitchProps> = ({
       </View>
       
 
-        <View className="w-14 h-8 rounded-full">
+        <View style={{ width: 56, height: 32, borderRadius: 16 }}>
+          {useGlass ? (
+            // Native iOS 26+ Liquid Glass toggle track
+            <GlassView
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: 16,
+                position: 'absolute',
+              }}
+              glassEffectStyle="regular"
+              tintColor={switchValue ? colors.highlight : undefined}
+            />
+          ) : (
+            // Fallback for older iOS versions
           <View
-            className={`w-full h-full border border-border rounded-full absolute ${switchValue ? 'bg-highlight' : 'bg-secondary'}`}
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: 16,
+                position: 'absolute',
+                backgroundColor: switchValue ? colors.highlight : colors.border,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
           />
+          )}
+          {/* Toggle knob */}
           <Animated.View
             style={{
               transform: [{
                 translateX: slideAnim.interpolate({
                   inputRange: [-0.2, 1.2],
-                  outputRange: [1, 28]
+                  outputRange: [2, 26]
                 })
-              }]
+              }],
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+              marginVertical: 4,
+              backgroundColor: '#FFFFFF',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 3,
+              elevation: 3,
             }}
-            className="w-6 h-6 bg-white rounded-full shadow-sm my-1 border border-border"
-          />
+          >
+            {useGlass && (
+              <GlassView
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: 12,
+                }}
+                glassEffectStyle="clear"
+                tintColor="#FFFFFF"
+              />
+            )}
+          </Animated.View>
         </View>
     </TouchableOpacity>
   );
 };
 
+// Support both named and default imports
+export { Switch };
 export default Switch; 

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Pressable, Animated, Platform, UIManager, ViewStyle } from 'react-native';
 import Icon, { IconName } from './Icon';
 import ThemedText from './ThemedText';
+import useThemeColors from '@/app/contexts/ThemeColors';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -30,6 +31,7 @@ const Expandable: React.FC<ExpandableProps> = ({
   className,
   style
 }) => {
+  const colors = useThemeColors();
   const [isExpanded, setIsExpanded] = useState(expanded ?? defaultExpanded);
   const rotateAnim = useRef(new Animated.Value(expanded ?? defaultExpanded ? 1 : 0)).current;
   const heightAnim = useRef(new Animated.Value(expanded ?? defaultExpanded ? 1 : 0)).current;
@@ -60,8 +62,11 @@ const Expandable: React.FC<ExpandableProps> = ({
         className="flex-row items-center py-4 pl-2 pr-4"
       >
         {icon && (
-         <View className="mr-2 h-12 w-12 rounded-full  items-center justify-center">
-            <Icon name={icon} size={20} />
+         <View 
+           className="mr-2 h-12 w-12 rounded-full items-center justify-center"
+           style={{ backgroundColor: colors.accentLight }}
+         >
+            <Icon name={icon} size={20} color={colors.iconAccent} />
           </View>
         )}
         <View className="flex-1">

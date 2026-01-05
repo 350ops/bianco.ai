@@ -141,4 +141,6 @@ const ListItem = forwardRef<View, ListItemProps>((props, ref) => {
 
 ListItem.displayName = 'ListItem';
 
+// Support both named and default imports
+export { ListItem };
 export default ListItem; 

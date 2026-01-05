@@ -6,7 +6,7 @@ interface ThemedScrollerProps extends ScrollViewProps {
   children: React.ReactNode;
 }
 
-export default function ThemedScroller({ 
+function ThemedScroller({ 
   className = '', 
   children, 
   contentContainerStyle,
@@ -28,3 +28,7 @@ export default function ThemedScroller({
     </ScrollView>
   );
 }
+
+// Support both named and default imports (also alias as ThemeScroller)
+export { ThemedScroller, ThemedScroller as ThemeScroller };
+export default ThemedScroller;

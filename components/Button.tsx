@@ -25,7 +25,7 @@ interface ButtonProps {
   iconClassName?: string;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
   loading = false,
@@ -149,3 +149,7 @@ export const Button: React.FC<ButtonProps> = ({
     </TouchableOpacity>
   );
 };
+
+// Support both named and default imports
+export { Button };
+export default Button;

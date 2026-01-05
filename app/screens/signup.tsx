@@ -73,7 +73,7 @@ export default function SignupScreen() {
                     className="mb-4 !bg-highlight"
                     rounded="full"
                     textClassName='!text-white'
-                    href="/(drawer)/(tabs)/"
+                    href="/screens/onboarding-start"
                   />
 
                   <View className='flex flex-row items-center justify-center gap-2'>

@@ -105,4 +105,6 @@ const Favorite: React.FC<FavoriteProps> = ({
   );
 };
 
+// Support both named and default imports
+export { Favorite };
 export default Favorite; 

@@ -291,4 +291,6 @@ const Input: React.FC<CustomTextInputProps> = ({
   );
 };
 
+// Support both named and default imports
+export { Input };
 export default Input;

@@ -21,24 +21,24 @@ interface SlideData {
 const slides: SlideData[] = [
     {
         id: '1',
-        title: 'Unleash your creativity',
-        image: require('@/assets/img/scify-2.jpg'),
-        description: 'Generate premium ai images',
+        title: 'Unleash your imagination',
+        image: require('@/assets/img/kitch.png'),
+        description: 'Generate stunning designs for your next project',
         icon: 'Sparkles'
     },
     {
         id: '2',
-        title: 'No more boring designs',
-        image: require('@/assets/img/scify-3.jpg'),
-        description: 'Generate stunning designs for your next project',
+        title: 'Get personalized content',
+        image: require('@/assets/img/livin.png'),
+        description: 'Get personalized content based on your interests and preferences',
         icon: 'Heart'
     },
     {
         id: '3',
-        title: 'Personalized content',
-        image: require('@/assets/img/scify-4.jpg'),
+        title: 'Redesign your space',
+        image: require('@/assets/img/bathr.png'),
         description: 'Get personalized content based on your interests and preferences',
-        icon: 'User'
+        icon: 'Home'
     },
 ];
 

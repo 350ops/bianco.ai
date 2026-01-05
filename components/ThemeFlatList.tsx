@@ -28,4 +28,9 @@ const ThemedFlatList = forwardRef(ThemedFlatListInner) as <T>(
   props: ThemedFlatListProps<T> & { ref?: React.Ref<FlatList<T>> }
 ) => React.ReactElement;
 
+// Add displayName for debugging
+(ThemedFlatList as any).displayName = 'ThemedFlatList';
+
+// Support both named and default imports
+export { ThemedFlatList };
 export default ThemedFlatList;

@@ -184,31 +184,10 @@ export default function AiStudioScreen() {
                 ]}
             />
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
-            >
-                <ScrollView contentContainerStyle={{ paddingBottom: 100 }} className="flex-1 px-global">
+           
+   
 
-                    {showApiKeyInput && (
-                        <AnimatedView animation="fadeInDown" className="mb-4 bg-secondary p-4 rounded-xl border border-border">
-                            <ThemedText className="font-semibold mb-2">OpenAI API Key</ThemedText>
-                            <TextInput
-                                value={apiKey}
-                                onChangeText={setApiKey}
-                                placeholder="sk-..."
-                                placeholderTextColor={colors.placeholder}
-                                className="bg-background p-3 rounded-lg text-text border border-border"
-                                secureTextEntry
-                            />
-                            <ThemedText className="text-xs text-light-subtext dark:text-dark-subtext mt-2">
-                                {process.env.EXPO_PUBLIC_OPENAI_API_KEY 
-                                    ? 'Using API key from environment. Override below if needed.'
-                                    : 'Your key is used locally and not saved permanently.'}
-                            </ThemedText>
-                        </AnimatedView>
-                    )}
+                    
 
                     <View className="mb-6">
                         <ThemedText className="text-xl font-bold mb-2">1. Upload Image</ThemedText>
@@ -303,8 +282,8 @@ export default function AiStudioScreen() {
                         </AnimatedView>
                     )}
 
-                </ScrollView>
-            </KeyboardAvoidingView>
+              
+            
         </View>
     );
 }

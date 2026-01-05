@@ -93,4 +93,6 @@ const Avatar: React.FC<AvatarProps> = ({
   );
 };
 
+// Support both named and default imports
+export { Avatar };
 export default Avatar;

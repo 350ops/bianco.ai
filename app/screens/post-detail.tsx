@@ -36,9 +36,9 @@ export default function PostScreen() {
 
             <ThemedScroller className="!px-0 !pt-0">
                 <View className="w-full flex-row px-global items-center mb-4 ">
-                    <Avatar size="sm" src={require("@/assets/img/thomino.jpg")} link="/screens/user-profile" />
+                    <Avatar size="sm" src={require("@/assets/img/user.png")} link="/screens/user-profile" />
                     <View className="ml-3">
-                        <ThemedText className="text-base font-medium">Thomino</ThemedText>
+                        <ThemedText className="text-base font-medium">" "</ThemedText>
                         <ThemedText className="text-sm opacity-50">1h ago</ThemedText>
                     </View>
                 </View>

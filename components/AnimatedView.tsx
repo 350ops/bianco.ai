@@ -364,5 +364,10 @@ function AnimatedViewComponent({
     );
 }
 
-// Export a memoized version of the component
-export default memo(AnimatedViewComponent, propsAreEqual); 
+// Create memoized component with displayName
+const AnimatedView = memo(AnimatedViewComponent, propsAreEqual);
+AnimatedView.displayName = 'AnimatedView';
+
+// Support both named and default imports
+export { AnimatedView };
+export default AnimatedView; 

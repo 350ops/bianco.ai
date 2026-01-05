@@ -3,6 +3,7 @@ import { View, Pressable, ViewStyle } from 'react-native';
 import { Link } from 'expo-router';
 import Icon, { IconName } from './Icon';
 import ThemedText from './ThemedText';
+import useThemeColors from '@/app/contexts/ThemeColors';
 
 interface ListLinkProps {
   icon?: IconName;
@@ -33,12 +34,17 @@ const ListLink: React.FC<ListLinkProps> = ({
   style,
   hasBorder = false
 }) => {
+  const colors = useThemeColors();
+  
   // Component for the actual content
   const Content = () => (
     <View className={`flex-row items-center border-b border-border py-4 pl-2 pr-4 ${className} ${disabled ? 'opacity-50' : ''}`} style={style}>
       {icon && (
-        <View className="mr-4 h-12 w-12 rounded-full  items-center justify-center">
-          <Icon name={icon} size={iconSize} />
+        <View 
+          className="mr-4 h-12 w-12 rounded-full items-center justify-center"
+          style={{ backgroundColor: colors.accentLight }}
+        >
+          <Icon name={icon} size={iconSize} color={colors.iconAccent} />
         </View>
       )}
       <View className="flex-1">

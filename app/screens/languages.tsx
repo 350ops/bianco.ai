@@ -20,11 +20,7 @@ export default function LanguagesScreen() {
         { title: "English", code: "EN", flag: US },
         { title: "Spanish", code: "ES", flag: ES },
         { title: "Portuguese", code: "PT", flag: PT },
-        { title: "French", code: "FR", flag: FR },
-        { title: "German", code: "DE", flag: DE },
-        { title: "Italian", code: "IT", flag: IT },
-        { title: "Arabic", code: "AR", flag: SA },
-        { title: "Turkish", code: "TR", flag: TR },
+  
     ];
 
     const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
@@ -34,7 +30,7 @@ export default function LanguagesScreen() {
             <Header showBackButton />
             <ThemedScroller className="p-global">
                 <Section title="Choose Language" titleSize="4xl" className="mt-4 mb-10" />
-                <View className="bg-secondary rounded-2xl overflow-hidden">
+                <View className="rounded-2xl overflow-hidden">
                     {languages.map((language, index) => (
                         <LanguageItem key={index} title={language.title} code={language.code} flag={language.flag} selected={selectedLanguage === language.title} onSelect={() => { setSelectedLanguage(language.title) }} />
                     ))}

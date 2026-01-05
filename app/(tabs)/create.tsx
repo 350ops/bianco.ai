@@ -3,16 +3,25 @@ import { View, Image, TextInput, ScrollView, Alert, ActivityIndicator, Pressable
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as Haptics from 'expo-haptics';
+import * as Sharing from 'expo-sharing';
+import { File, Paths } from 'expo-file-system/next';
+import * as MediaLibrary from 'expo-media-library';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
+
+// Check if native liquid glass is available (iOS 26+)
+const supportsNativeLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
 
 import { Button } from '@/components/Button';
 import ThemedText from '@/components/ThemedText';
 import useThemeColors from '@/app/contexts/ThemeColors';
 import Icon from '@/components/Icon';
 import AnimatedView from '@/components/AnimatedView';
+import AnimatedBottomSheet from '@/components/AnimatedBottomSheet';
+import { AppleListRow, AppleListGroup } from '@/components/AppleListRow';
 import { saveDesign } from '@/app/utils/designStorage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -47,21 +56,26 @@ const toRgba = (hexColor: string, alpha: number) => {
     return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 };
 
+// Dark green color matching the hero card (bg-green-900)
+const CARD_GREEN = '#14532d';
+const PASTEL_YELLOW = '#FFF3D6';
+
 const createLiquidGlassStyles = (colors: ReturnType<typeof useThemeColors>) =>
     StyleSheet.create({
         cardOuter: {
             borderRadius: 32,
             overflow: 'hidden',
-            shadowColor: colors.isDark ? 'rgba(0,0,0,0.6)' : toRgba(colors.text, 0.2),
+            shadowColor: colors.isDark ? 'rgba(0,0,0,0.6)' : 'rgba(20, 83, 45, 0.3)',
             shadowOffset: { width: 0, height: 12 },
             shadowOpacity: 0.6,
             shadowRadius: 24,
         },
         cardBlur: {
             borderRadius: 32,
-            borderWidth: 1,
-            borderColor: colors.border,
+            borderWidth: 0,
+            borderColor: 'transparent',
             overflow: 'hidden',
+            backgroundColor: colors.isDark ? colors.secondary : CARD_GREEN,
         },
         topHighlight: {
             position: 'absolute',
@@ -69,7 +83,7 @@ const createLiquidGlassStyles = (colors: ReturnType<typeof useThemeColors>) =>
             left: 20,
             right: 20,
             height: 1,
-            backgroundColor: toRgba(colors.text, colors.isDark ? 0.18 : 0.28),
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
             borderRadius: 1,
         },
         cardContent: {
@@ -82,7 +96,7 @@ const createLiquidGlassStyles = (colors: ReturnType<typeof useThemeColors>) =>
             marginBottom: 24,
             borderRadius: 28,
             overflow: 'hidden',
-            shadowColor: colors.isDark ? 'rgba(0,0,0,0.6)' : toRgba(colors.text, 0.2),
+            shadowColor: 'rgba(0,0,0,0.3)',
             shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 1,
             shadowRadius: 16,
@@ -93,14 +107,14 @@ const createLiquidGlassStyles = (colors: ReturnType<typeof useThemeColors>) =>
             borderRadius: 28,
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: colors.border,
+            borderWidth: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
             overflow: 'hidden',
         },
         title: {
             fontSize: 28,
             fontWeight: '700',
-            color: colors.text,
+            color: '#FFFFFF',
             textAlign: 'center',
             marginBottom: 12,
             letterSpacing: -0.5,
@@ -108,25 +122,24 @@ const createLiquidGlassStyles = (colors: ReturnType<typeof useThemeColors>) =>
         description: {
             fontSize: 15,
             lineHeight: 22,
-            color: colors.text,
+            color: 'rgba(255, 255, 255, 0.8)',
             textAlign: 'center',
             marginBottom: 28,
             paddingHorizontal: 8,
-            opacity: colors.isDark ? 0.7 : 0.65,
         },
         actionButton: {
             borderRadius: 50,
             overflow: 'hidden',
             width: '100%',
-            shadowColor: colors.isDark ? 'rgba(0,0,0,0.4)' : toRgba(colors.accent, 0.25),
-            shadowOffset: { width: 0, height: 0 },
+            shadowColor: 'rgba(0,0,0,0.2)',
+            shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 1,
-            shadowRadius: 10,
+            shadowRadius: 8,
         },
         buttonBlur: {
             borderRadius: 50,
-            borderWidth: 1,
-            borderColor: colors.border,
+            borderWidth: 0,
+            backgroundColor: colors.isDark ? colors.secondary : PASTEL_YELLOW,
             overflow: 'hidden',
         },
         buttonContent: {
@@ -140,14 +153,13 @@ const createLiquidGlassStyles = (colors: ReturnType<typeof useThemeColors>) =>
         buttonText: {
             fontSize: 16,
             fontWeight: '600',
-            color: colors.text,
+            color: colors.isDark ? '#FFFFFF' : '#14532d',
             letterSpacing: 0.5,
         },
         skipText: {
             fontSize: 13,
-            color: colors.text,
+            color: 'rgba(255, 255, 255, 0.7)',
             fontWeight: '500',
-            opacity: colors.isDark ? 0.6 : 0.7,
         },
     });
 
@@ -162,30 +174,209 @@ const StepBadge = ({ number }: { number: number }) => (
     </View>
 );
 
+// Liquid Glass Card Component - Uses native GlassView on iOS 26+, falls back to BlurView
+interface LiquidGlassCardProps {
+    children: React.ReactNode;
+    style?: object;
+    cardStyle?: 'regular' | 'clear';
+    colors: ReturnType<typeof useThemeColors>;
+    liquidGlassStyles: ReturnType<typeof createLiquidGlassStyles>;
+    glassGradients: {
+        card: [string, string];
+        icon: [string, string];
+        button: [string, string];
+        paginationActive: string;
+        paginationInactive: string;
+    };
+}
+
+const LiquidGlassCard = ({ 
+    children, 
+    style, 
+    cardStyle = 'regular',
+    colors,
+    liquidGlassStyles,
+    glassGradients 
+}: LiquidGlassCardProps) => {
+    if (supportsNativeLiquidGlass) {
+        // Use native iOS 26+ GlassView with green background
+        return (
+            <View style={[liquidGlassStyles.cardOuter, style]}>
+                <GlassView
+                    style={liquidGlassStyles.cardBlur}
+                    glassEffectStyle={cardStyle}
+                    tintColor={colors.isDark ? undefined : CARD_GREEN}
+                    isInteractive
+                >
+                    {/* Top highlight line */}
+                    <View style={liquidGlassStyles.topHighlight} />
+                    {children}
+                </GlassView>
+            </View>
+        );
+    }
+
+    // Fallback - solid green background (no blur needed)
+    return (
+        <View style={[liquidGlassStyles.cardOuter, style]}>
+            <View style={liquidGlassStyles.cardBlur}>
+                {/* Top highlight line */}
+                <View style={liquidGlassStyles.topHighlight} />
+                {children}
+            </View>
+        </View>
+    );
+};
+
+// Liquid Glass Icon Component
+interface LiquidGlassIconProps {
+    icon: string;
+    size?: number;
+    colors: ReturnType<typeof useThemeColors>;
+    liquidGlassStyles: ReturnType<typeof createLiquidGlassStyles>;
+    glassGradients: {
+        card: [string, string];
+        icon: [string, string];
+        button: [string, string];
+        paginationActive: string;
+        paginationInactive: string;
+    };
+}
+
+const LiquidGlassIcon = ({ 
+    icon, 
+    size = 56,
+    colors,
+    liquidGlassStyles,
+}: LiquidGlassIconProps) => {
+    // Icon color is white on green background
+    const iconColor = colors.isDark ? '#FFFFFF' : '#FFFFFF';
+    
+    if (supportsNativeLiquidGlass) {
+        return (
+            <View style={liquidGlassStyles.iconContainer}>
+                <GlassView
+                    style={liquidGlassStyles.iconBlur}
+                    glassEffectStyle="regular"
+                >
+                    <Icon
+                        name={icon as any}
+                        size={size}
+                        color={iconColor}
+                    />
+                </GlassView>
+            </View>
+        );
+    }
+
+    return (
+        <View style={liquidGlassStyles.iconContainer}>
+            <View style={liquidGlassStyles.iconBlur}>
+                <Icon
+                    name={icon as any}
+                    size={size}
+                    color={iconColor}
+                />
+            </View>
+        </View>
+    );
+};
+
+// Liquid Glass Button Component
+interface LiquidGlassButtonProps {
+    onPress: () => void;
+    title: string;
+    colors: ReturnType<typeof useThemeColors>;
+    liquidGlassStyles: ReturnType<typeof createLiquidGlassStyles>;
+    glassGradients: {
+        card: [string, string];
+        icon: [string, string];
+        button: [string, string];
+        paginationActive: string;
+        paginationInactive: string;
+    };
+}
+
+const LiquidGlassButton = ({ 
+    onPress, 
+    title,
+    colors,
+    liquidGlassStyles,
+}: LiquidGlassButtonProps) => {
+    // Button text/icon color: green on pastel yellow (light), white on dark
+    const buttonTextColor = colors.isDark ? '#FFFFFF' : CARD_GREEN;
+    
+    if (supportsNativeLiquidGlass) {
+        return (
+            <Pressable onPress={onPress} style={liquidGlassStyles.actionButton}>
+                <GlassView
+                    style={liquidGlassStyles.buttonBlur}
+                    glassEffectStyle="regular"
+                    tintColor={colors.isDark ? undefined : PASTEL_YELLOW}
+                    isInteractive
+                >
+                    <View style={liquidGlassStyles.buttonContent}>
+                        <ThemedText style={[liquidGlassStyles.buttonText, { color: buttonTextColor }]}>
+                            {title}
+                        </ThemedText>
+                        <Icon
+                            name="ArrowRight"
+                            size={18}
+                            color={buttonTextColor}
+                        />
+                    </View>
+                </GlassView>
+            </Pressable>
+        );
+    }
+
+    // Fallback - solid pastel yellow button
+    return (
+        <Pressable onPress={onPress} style={liquidGlassStyles.actionButton}>
+            <View style={liquidGlassStyles.buttonBlur}>
+                <View style={liquidGlassStyles.buttonContent}>
+                    <ThemedText style={[liquidGlassStyles.buttonText, { color: buttonTextColor }]}>
+                        {title}
+                    </ThemedText>
+                    <Icon
+                        name="ArrowRight"
+                        size={18}
+                        color={buttonTextColor}
+                    />
+                </View>
+            </View>
+        </Pressable>
+    );
+};
+
 export default function CreateScreen() {
     const colors = useThemeColors();
     const insets = useSafeAreaInsets();
+    
     const liquidGlassStyles = useMemo(() => createLiquidGlassStyles(colors), [colors]);
     const glassGradients = useMemo(() => {
+        // Pastel yellow for card backgrounds
+        const pastelYellow = '#FFF3D6';
+        const pastelYellowLight = '#FFFBF0';
+        
         const accentSoft = toRgba(colors.accent, colors.isDark ? 0.25 : 0.2);
-        const secondarySoft = toRgba(colors.secondary, colors.isDark ? 0.75 : 0.55);
         const backgroundSoft = toRgba(colors.bg, colors.isDark ? 0.92 : 0.85);
         const textSoft = toRgba(colors.text, colors.isDark ? 0.12 : 0.18);
 
         return {
             card: (colors.isDark
-                ? [backgroundSoft, secondarySoft]
-                : [secondarySoft, accentSoft]) as [string, string],
+                ? [backgroundSoft, 'rgba(42, 42, 42, 0.75)']
+                : [pastelYellowLight, pastelYellow]) as [string, string],
             icon: (colors.isDark
                 ? [textSoft, toRgba(colors.text, 0.04)]
-                : [accentSoft, toRgba(colors.secondary, 0.25)]) as [string, string],
+                : ['rgba(255, 243, 214, 0.8)', 'rgba(255, 229, 160, 0.6)']) as [string, string],
             button: (colors.isDark
-                ? [toRgba(colors.secondary, 0.9), toRgba(colors.bg, 0.9)]
-                : [toRgba(colors.accent, 0.35), toRgba(colors.secondary, 0.35)]) as [string, string],
-            paginationActive: colors.accent,
+                ? ['rgba(42, 42, 42, 0.9)', 'rgba(26, 26, 26, 0.9)']
+                : ['rgba(255, 243, 214, 0.95)', 'rgba(255, 229, 160, 0.9)']) as [string, string],
+            paginationActive: colors.isDark ? '#FFE5A0' : '#484848',
             paginationInactive: colors.isDark
                 ? toRgba(colors.text, 0.25)
-                : toRgba(colors.accent, 0.35),
+                : 'rgba(72, 72, 72, 0.25)',
         };
     }, [colors]);
 
@@ -208,16 +399,38 @@ export default function CreateScreen() {
     const [selectedFlooringSampleId, setSelectedFlooringSampleId] = useState<string | null>(null);
     const [selectedFurnitureStyle, setSelectedFurnitureStyle] = useState('');
     const [selectedStyle, setSelectedStyle] = useState('');
+    
+    // Picker modal states
+    const [showStylePicker, setShowStylePicker] = useState(false);
     const [showWallPicker, setShowWallPicker] = useState(false);
     const [showFlooringPicker, setShowFlooringPicker] = useState(false);
     const [showFurnitureStylePicker, setShowFurnitureStylePicker] = useState(false);
-    const [showStylePicker, setShowStylePicker] = useState(false);
+    const [showRoomTypePicker, setShowRoomTypePicker] = useState(false);
+    
     const [showRecap, setShowRecap] = useState(false);
     const [sliderCompleted, setSliderCompleted] = useState(false);
     const [shouldGenerate, setShouldGenerate] = useState(false);
     const sliderPosition = useRef(new Animated.Value(0)).current;
     const [carouselIndex, setCarouselIndex] = useState(0);
     const carouselRef = useRef<FlatList>(null);
+    
+    // Strict realism mode and room type
+    const [strictMode, setStrictMode] = useState(false);
+    const [roomType, setRoomType] = useState<string>('');
+    
+    // Room type options
+    const ROOM_TYPE_OPTIONS = [
+        'Living Room',
+        'Bedroom',
+        'Kitchen',
+        'Bathroom',
+        'Dining Room',
+        'Home Office',
+        'Entryway',
+        'Hallway',
+        'Nursery',
+        'Guest Room',
+    ];
     
     // Furniture reference images state
     const [selectedFurnitureItems, setSelectedFurnitureItems] = useState<string[]>([]);
@@ -346,41 +559,130 @@ export default function CreateScreen() {
         'Chic & Sophisticated',
     ];
 
-    // Build prompt from selections
+    // Build production-grade prompt with hard constraints
     const buildPromptFromSelections = () => {
-        const parts: string[] = [];
+        const promptSections: string[] = [];
         
-        if (selectedStyle) parts.push(`${selectedStyle} interior design`);
-        if (selectedWall) parts.push(`${selectedWall.toLowerCase()} walls`);
-        if (selectedFlooring) parts.push(`${selectedFlooring.toLowerCase()} flooring`);
-        if (selectedFurnitureStyle) parts.push(`${selectedFurnitureStyle.toLowerCase()} furniture`);
-        if (selectedFlooringSampleId) {
-            parts.push('Match the floor finish to the selected flooring reference image.');
+        // ============================================
+        // SECTION 1: CRITICAL CONSTRAINTS (Non-negotiable)
+        // ============================================
+        const constraints = `CRITICAL CONSTRAINTS:
+- Preserve the original room geometry exactly.
+- Do NOT change wall positions, ceiling height, doors, windows, or openings.
+- Do NOT modify camera angle, lens perspective, or framing.
+- Do NOT add or remove architectural elements.
+- Keep original natural lighting direction and intensity.
+- Only modify surfaces, finishes, and furniture explicitly requested.`;
+        
+        promptSections.push(constraints);
+        
+        // ============================================
+        // SECTION 2: STRUCTURE (Immutable)
+        // ============================================
+        let structureSection = `STRUCTURE (DO NOT CHANGE):
+- Original room layout and proportions
+- All doors, windows, trim, and architectural details
+- Original lighting sources and direction
+- Camera perspective and viewpoint`;
+        
+        if (roomType) {
+            structureSection += `\n- Room function: ${roomType}`;
         }
         
-        // Add furniture placement instructions if furniture is selected
-        const allFurnitureItems = [...selectedFurnitureItems, ...uploadedImages.map(img => img.name)];
+        promptSections.push(structureSection);
         
-        if (allFurnitureItems.length > 0) {
-            const furnitureNames = selectedFurnitureItems.map(id => {
-                const item = furnitureReferenceItems.find(i => i.id === id);
-                return item ? item.name : '';
-            }).filter(Boolean);
-            
-            const uploadedNames = uploadedImages.map(img => img.name);
-            const allNames = [...furnitureNames, ...uploadedNames];
-            
-            // Detailed description for AI to understand what products to add
-            parts.push(`Add and place the following products into the room design: ${allNames.join(', ')}. Each product should be seamlessly integrated into the existing room space, maintaining proper scale, lighting, shadows, and perspective that matches the original room photo. The products should appear as if they naturally belong in the space with realistic proportions and placement.`);
+        // ============================================
+        // SECTION 3: STYLE TRANSFORMATION
+        // ============================================
+        const styleChanges: string[] = [];
+        
+        if (selectedStyle) {
+            styleChanges.push(`Overall aesthetic: ${selectedStyle} interior design`);
+        }
+        
+        if (selectedWall) {
+            styleChanges.push(`Walls: Replace existing wall finish with ${selectedWall.toLowerCase()}. Remove the previous wall material entirely. Keep wall texture realistic and consistent.`);
+        }
+        
+        if (selectedFlooring) {
+            styleChanges.push(`Flooring: Replace the existing floor surface with ${selectedFlooring.toLowerCase()}. Remove the previous floor material entirely. Ensure seamless integration with room edges.`);
+        }
+        
+        if (selectedFlooringSampleId) {
+            styleChanges.push(`Floor reference: Match the floor finish exactly to the selected flooring reference image.`);
+        }
+        
+        if (selectedFurnitureStyle) {
+            styleChanges.push(`Furniture style: ${selectedFurnitureStyle.toLowerCase()}`);
+        }
+        
+        if (styleChanges.length > 0) {
+            promptSections.push(`STYLE TRANSFORMATION:\n${styleChanges.join('\n')}`);
+        }
+        
+        // ============================================
+        // SECTION 4: FURNITURE PLACEMENT (If applicable)
+        // ============================================
+        const furnitureNames = selectedFurnitureItems.map(id => {
+            const item = furnitureReferenceItems.find(i => i.id === id);
+            return item ? item.name : '';
+        }).filter(Boolean);
+        
+        const uploadedNames = uploadedImages.map(img => img.name);
+        const allProductNames = [...furnitureNames, ...uploadedNames];
+        
+        if (allProductNames.length > 0) {
+            let furnitureSection = `FURNITURE & PRODUCT PLACEMENT:
+Products to add: ${allProductNames.join(', ')}
+
+Furniture placement rules:
+- Each product must sit fully on the floor plane with correct ground contact.
+- Maintain realistic clearance from doors and primary walkways.
+- Do NOT block doors, windows, radiators, or electrical outlets.
+- Respect realistic scale relative to door height (standard door ~2.1m).
+- Match product lighting and shadows to room's ambient light.
+- Preserve product proportions from reference images.`;
             
             if (placementInstructions.trim()) {
-                parts.push(`Follow these specific placement instructions: ${placementInstructions.trim()}. Ensure the product placement follows these guidelines while maintaining realism.`);
-            } else {
-                parts.push(`Place all products in natural, functional positions that enhance the room's aesthetics and usability. The AI should determine the best placement based on the room layout and design style.`);
+                furnitureSection += `\n\nUser placement instructions: ${placementInstructions.trim()}`;
             }
+            
+            promptSections.push(furnitureSection);
         }
         
-        return parts.join(' ');
+        // ============================================
+        // SECTION 5: ROOM FUNCTION CONTEXT
+        // ============================================
+        if (roomType) {
+            promptSections.push(`ROOM FUNCTION CONTEXT:
+This space is a ${roomType}.
+All design decisions must respect typical functional use of this room type.
+Furniture placement should optimize usability for this room's purpose.`);
+        }
+        
+        // ============================================
+        // SECTION 6: STRICT MODE (If enabled)
+        // ============================================
+        if (strictMode) {
+            promptSections.push(`STRICT REALISM MODE ENABLED:
+No creative interpretation beyond explicit instructions.
+Preserve maximum fidelity to original photograph.
+Zero artistic embellishment or stylization.`);
+        }
+        
+        // ============================================
+        // SECTION 7: RENDERING QUALITY TARGET
+        // ============================================
+        const qualityTarget = `RENDERING QUALITY TARGET:
+Photorealistic interior visualization.
+Real-world materials with correct textures.
+Accurate shadows and global illumination matching original photo.
+No stylization, no illustration, no artistic exaggeration.
+Output must appear as a real photograph, not a 3D render.`;
+        
+        promptSections.push(qualityTarget);
+        
+        return promptSections.join('\n\n');
     };
 
     // Update prompt when selections change
@@ -581,7 +883,7 @@ export default function CreateScreen() {
         },
         {
             id: '2',
-            title: 'Project Estimate',
+            title: 'Renovation Cost Simulation',
             description: 'Get a detailed cost breakdown for your renovation project. Perfect for budget planning.',
             icon: 'Calculator' as const,
             iconColor: '#000',
@@ -605,16 +907,6 @@ export default function CreateScreen() {
                 title: 'Scan with AR',
                 description: 'Use LiDAR to create an accurate 3D model of your room. Perfect for precise renovations.',
                 icon: 'Scan' as const,
-                iconColor: '#000',
-                gradientColors: ['#fff', '#fff'] as [string, string],
-                textColor: '#000',
-                action: () => router.push('/screens/ar-room-scan'),
-            },
-            {
-                id: '5',
-                title: 'Augmented Reality',
-                description: 'Get your space area, dimensions, and more from your AR scan.',
-                icon: 'Box' as const,
                 iconColor: '#000',
                 gradientColors: ['#fff', '#fff'] as [string, string],
                 textColor: '#000',
@@ -884,14 +1176,18 @@ export default function CreateScreen() {
             {/* Header */}
             <View 
                 className="flex-row items-center justify-between px-global py-4" 
-                style={{ paddingTop: insets.top + 10 }}
+                style={{ paddingTop: insets.top + 10, zIndex: 100 }}
             >
                 {currentStep > 1 && !loading ? (
-                    <Pressable onPress={goBack}>
+                    <Pressable 
+                        onPress={goBack}
+                        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                        style={{ padding: 8 }}
+                    >
                         <Icon name="ChevronLeft" size={24} color={colors.text} />
                     </Pressable>
                 ) : (
-                    <View className="w-6" />
+                    <View className="w-10" />
                 )}
                 <ThemedText 
                     className="text-lg font-semibold"
@@ -899,7 +1195,14 @@ export default function CreateScreen() {
                 >
                     Step {currentStep} / 4
                 </ThemedText>
-                <Pressable onPress={resetAll}>
+                <Pressable 
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        resetAll();
+                    }}
+                    hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                    style={{ padding: 8 }}
+                >
                     <Icon name="X" size={24} color={colors.text} />
                 </Pressable>
             </View>
@@ -907,10 +1210,10 @@ export default function CreateScreen() {
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
             >
                 <ScrollView 
-                    contentContainerStyle={{ paddingBottom: 120 }} 
+                    contentContainerStyle={{ paddingBottom: insets.bottom + 100 }} 
                     className="flex-1 px-global"
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
@@ -919,7 +1222,7 @@ export default function CreateScreen() {
 
                     {/* Step 1: Add Photo - Carousel Design */}
                     {currentStep === 1 && (
-                        <View className="flex-1 -mx-global" style={{ marginTop: 40}}>
+                        <View className="flex-1 -mx-global" style={{ marginTop: 90 }}>
                             {/* Carousel */}
                             <FlatList
                                 ref={carouselRef}
@@ -939,105 +1242,58 @@ export default function CreateScreen() {
                                         style={{ width: SCREEN_WIDTH }}
                                         className="items-center justify-center px-6 py-6"
                                     >
-                                        {/* Liquid Glass Card */}
-                                        <View style={[liquidGlassStyles.cardOuter, { width: CARD_WIDTH }]}>
-    <BlurView
-        intensity={45}
-        tint={colors.isDark ? "dark" : "light"}
-        style={liquidGlassStyles.cardBlur}
-    >
-        {/* Glass overlay gradient */}
-        <LinearGradient
-            colors={glassGradients.card}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={StyleSheet.absoluteFill}
-        />
+                                        {/* Liquid Glass Card - Uses native GlassView on iOS 26+ */}
+                                        <LiquidGlassCard
+                                            style={{ width: CARD_WIDTH }}
+                                            colors={colors}
+                                            liquidGlassStyles={liquidGlassStyles}
+                                            glassGradients={glassGradients}
+                                        >
+                                            {/* Content */}
+                                            <View style={liquidGlassStyles.cardContent}>
+                                                {/* Icon in glass circle */}
+                                                <LiquidGlassIcon
+                                                    icon={item.icon}
+                                                    size={56}
+                                                    colors={colors}
+                                                    liquidGlassStyles={liquidGlassStyles}
+                                                    glassGradients={glassGradients}
+                                                />
 
-        {/* Top highlight line */}
-        <View style={liquidGlassStyles.topHighlight} />
-
-        {/* Content */}
-        <View style={liquidGlassStyles.cardContent}>
-            {/* Icon in glass circle */}
-            <View style={liquidGlassStyles.iconContainer}>
-                <BlurView
-                    intensity={60}
-                    tint={colors.isDark ? "dark" : "light"}
-                    style={liquidGlassStyles.iconBlur}
-                >
-                    <LinearGradient
-                        colors={glassGradients.icon}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={StyleSheet.absoluteFill}
-                    />
-
-                    <Icon
-                        name={item.icon}
-                        size={56}
-                        color={colors.text}
-                    />
-                </BlurView>
-            </View>
-
-                                                    {/* Title */}
-                                                    <ThemedText style={liquidGlassStyles.title}>
-                                                        {item.title}
+                                                {/* Title */}
+                                                <ThemedText style={liquidGlassStyles.title}>
+                                                    {item.title}
                             </ThemedText>
-                                                    
-                                                    {/* Description */}
-                                                    <ThemedText style={liquidGlassStyles.description}>
-                                                        {item.description}
+                                                
+                                                {/* Description */}
+                                                <ThemedText style={liquidGlassStyles.description}>
+                                                    {item.description}
                             </ThemedText>
 
-                                                    {/* Glass Action Button */}
+                                                {/* Glass Action Button */}
+                                                <LiquidGlassButton
+                                                    onPress={item.action}
+                                                    title="Select"
+                                                    colors={colors}
+                                                    liquidGlassStyles={liquidGlassStyles}
+                                                    glassGradients={glassGradients}
+                                                />
+
+                                                {/* Skip/Next hint */}
+                                                {index < tutorialSlides.length - 1 && (
                             <Pressable 
-                                                        onPress={item.action}
-                                                        style={liquidGlassStyles.actionButton}
+                                                        onPress={() => {
+                                                            carouselRef.current?.scrollToIndex({ index: index + 1, animated: true });
+                                                        }}
+                                                        className="py-3 items-center"
                                                     >
-                                                       <BlurView
-    intensity={80}
-    tint={colors.isDark ? "dark" : "light"}
-    style={liquidGlassStyles.buttonBlur}
->
-    <LinearGradient
-        colors={glassGradients.button}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-    />
-
-    <View style={liquidGlassStyles.buttonContent}>
-        <ThemedText style={liquidGlassStyles.buttonText}>
-            Select
+                                                        <ThemedText style={liquidGlassStyles.skipText}>
+                                                            Swipe for more →
                                 </ThemedText>
-
-        <Icon
-            name="ArrowRight"
-            size={18}
-            color={colors.text}
-        />
-                                </View>
-</BlurView>
                             </Pressable>
-
-                                                    {/* Skip/Next hint */}
-                                                    {index < tutorialSlides.length - 1 && (
-                                <Pressable 
-                                                            onPress={() => {
-                                                                carouselRef.current?.scrollToIndex({ index: index + 1, animated: true });
-                                                            }}
-                                                            className="py-3 items-center"
-                                                        >
-                                                            <ThemedText style={liquidGlassStyles.skipText}>
-                                                                Swipe for more →
-                                                            </ThemedText>
-                                </Pressable>
-                            )}
-                                    </View>
-                                            </BlurView>
-                                </View>
+                                                )}
+                                        </View>
+                                        </LiquidGlassCard>
                                         </View>
                                 )}
                             />
@@ -1057,8 +1313,8 @@ export default function CreateScreen() {
                                         }}
                                     />
                                 ))}
-                                        </View>
                                     </View>
+                                </View>
                     )}
 
                     {/* Step 2: Review Photo */}
@@ -1082,11 +1338,12 @@ export default function CreateScreen() {
                                 </Pressable>
                             </View>
 
-                            <Button
-                                title="Continue"
-                                variant="primary"
-                                size="large"
+                            <LiquidGlassButton
                                 onPress={() => setCurrentStep(3)}
+                                title="Continue"
+                                colors={colors}
+                                liquidGlassStyles={liquidGlassStyles}
+                                glassGradients={glassGradients}
                             />
                         </AnimatedView>
                     )}
@@ -1094,7 +1351,13 @@ export default function CreateScreen() {
                     {/* Step 3: Describe Changes */}
                     {currentStep === 3 && (
                         <AnimatedView animation="fadeInUp">
-                            <ThemedText className="text-2xl font-bold mb-2">Describe Your Vision</ThemedText>
+                            <ThemedText className="text-2xl font-bold mb-1">What should change?</ThemedText>
+                            <ThemedText className="text-sm mb-4" style={{ color: colors.text }}>
+                                Everything else stays exactly the same.
+                            </ThemedText>
+                        
+                            {/* What will NOT change - Confirmation Box */}
+                            
                             
 
                             {image && (
@@ -1102,7 +1365,17 @@ export default function CreateScreen() {
                                     <Image source={{ uri: image }} className="w-full h-full" resizeMode="cover" />
                                 </View>
                             )}
-
+  <View className="mb-4 p-4 rounded-xl" style={{ backgroundColor: colors.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', borderWidth: 1, borderColor: colors.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}>
+                                <ThemedText className="font-bold mb-2" style={{ color: colors.isDark ? colors.text : colors.text }}>
+                                    ✓ We will keep these exactly the same
+                                </ThemedText>
+                                <View className="gap-1">
+                                    <ThemedText className="text-sm" style={{ color: colors.text }}>       • Room shape & size</ThemedText>
+                                    <ThemedText className="text-sm" style={{ color: colors.text }}>       • Doors & windows</ThemedText>
+                                    <ThemedText className="text-sm" style={{ color: colors.text }}>       • Camera angle</ThemedText>
+                                    <ThemedText className="text-sm" style={{ color: colors.text }}>       • Natural light direction</ThemedText>
+                                </View>
+                            </View>  
                             <TextInput
                                 value={prompt}
                                 onChangeText={setPrompt}
@@ -1113,87 +1386,60 @@ export default function CreateScreen() {
                                 textAlignVertical="top"
                             />
 
-                            {/* Design Options */}
-                            <ThemedText className="font-semibold mb-3">Customize Your Design (</ThemedText> 
-                            <View className="gap-3 mb-6">
-                                {/* Style Dropdown */}
-                                    <Pressable 
+                            {/* Design Options - Apple Style List */}
+                            <AppleListGroup header="Design Options">
+                                <AppleListRow
+                                    title="Style"
+                                    value={selectedStyle}
+                                    placeholder="Select style..."
+                                    icon="Sparkles"
                                     onPress={() => setShowStylePicker(true)}
-                                    className="flex-row items-center justify-between bg-secondary p-4 rounded-xl border border-border"
-                                >
-                                    <View className="flex-row items-center gap-3">
-                                        <Icon name="Sparkles" size={20} color={colors.highlight} />
-                                        <View>
-                                            <ThemedText className="text-xs text-light-subtext dark:text-dark-subtext">Style</ThemedText>
-                                            <ThemedText className="font-medium">
-                                                {selectedStyle || 'Select style...'}
-                                            </ThemedText>
-                                        </View>
-                                    </View>
-                                    <Icon name="ChevronDown" size={20} color={colors.placeholder} />
-                                    </Pressable>
-
-                                {/* Walls Dropdown */}
-                                <Pressable
+                                />
+                                <AppleListRow
+                                    title="Walls"
+                                    value={selectedWall}
+                                    placeholder="Select wall finish..."
+                                    icon="Square"
                                     onPress={() => setShowWallPicker(true)}
-                                    className="flex-row items-center justify-between bg-secondary p-4 rounded-xl border border-border"
-                                >
-                                    <View className="flex-row items-center gap-3">
-                                        <Icon name="Square" size={20} color={colors.highlight} />
-                                        <View>
-                                            <ThemedText className="text-xs text-light-subtext dark:text-dark-subtext">Walls</ThemedText>
-                                            <ThemedText className="font-medium">
-                                                {selectedWall || 'Select wall finish...'}
-                                            </ThemedText>
-                                        </View>
-                                    </View>
-                                    <Icon name="ChevronDown" size={20} color={colors.placeholder} />
-                                </Pressable>
-
-                                {/* Flooring Dropdown */}
-                                <Pressable
+                                />
+                                <AppleListRow
+                                    title="Flooring"
+                                    value={selectedFlooring}
+                                    placeholder="Select flooring..."
+                                    icon="Grid3x3"
                                     onPress={() => setShowFlooringPicker(true)}
-                                    className="flex-row items-center justify-between bg-secondary p-4 rounded-xl border border-border"
-                                >
-                                    <View className="flex-row items-center gap-3">
-                                        {selectedFlooringSample ? (
-                                            <View className="w-9 h-9 rounded-lg overflow-hidden border border-border">
-                                                <Image
-                                                    source={selectedFlooringSample.image}
-                                                    style={{ width: '100%', height: '100%' }}
-                                                    resizeMode="cover"
-                                                />
-                                            </View>
-                                        ) : (
-                                            <Icon name="Grid3x3" size={20} color={colors.highlight} />
-                                        )}
-                                        <View>
-                                            <ThemedText className="text-xs text-light-subtext dark:text-dark-subtext">Flooring</ThemedText>
-                                            <ThemedText className="font-medium">
-                                                {selectedFlooring || 'Select flooring...'}
-                                            </ThemedText>
-                                        </View>
-                                    </View>
-                                    <Icon name="ChevronDown" size={20} color={colors.placeholder} />
-                                </Pressable>
-
-                                {/* Furniture Style Dropdown */}
-                                <Pressable
+                                />
+                                <AppleListRow
+                                    title="Furniture"
+                                    value={selectedFurnitureStyle}
+                                    placeholder="Select furniture style..."
+                                    icon="Armchair"
                                     onPress={() => setShowFurnitureStylePicker(true)}
-                                    className="flex-row items-center justify-between bg-secondary p-4 rounded-xl border border-border"
-                                >
-                                    <View className="flex-row items-center gap-3">
-                                        <Icon name="Armchair" size={20} color={colors.highlight} />
-                                        <View>
-                                            <ThemedText className="text-xs text-light-subtext dark:text-dark-subtext">Furniture</ThemedText>
-                                            <ThemedText className="font-medium">
-                                                {selectedFurnitureStyle || 'Select furniture style...'}
-                                            </ThemedText>
-                                        </View>
-                                    </View>
-                                    <Icon name="ChevronDown" size={20} color={colors.placeholder} />
-                                </Pressable>
-                            </View>
+                                />
+                            </AppleListGroup>
+
+                            <AppleListGroup header="Room Settings">
+                                <AppleListRow
+                                    title="Room Type"
+                                    value={roomType}
+                                    placeholder="Select room type..."
+                                    icon="Home"
+                                    onPress={() => setShowRoomTypePicker(true)}
+                                />
+                            </AppleListGroup>
+                            
+                            {/* Advanced Settings with Toggle */}
+                            <AppleListGroup header="Advanced" footer="Strict mode prevents creative interpretation beyond your explicit instructions.">
+                                <AppleListRow
+                                    title="Strict Realism"
+                                    subtitle="No creative liberties"
+                                    icon="Shield"
+                                    isToggle
+                                    toggleValue={strictMode}
+                                    onToggle={setStrictMode}
+                                    showChevron={false}
+                                />
+                            </AppleListGroup>
 
                             {/* Furniture Reference Selection */}
                             <View className="mb-6">
@@ -1210,7 +1456,7 @@ export default function CreateScreen() {
                                     {furnitureReferenceItems.map((item) => {
                                         const isSelected = selectedFurnitureItems.includes(item.id);
                                         return (
-                                            <Pressable
+                                    <Pressable 
                                                 key={item.id}
                                                 onPress={() => {
                                                     if (isSelected) {
@@ -1246,7 +1492,7 @@ export default function CreateScreen() {
                                                 <ThemedText className="text-xs text-center" numberOfLines={2}>
                                                     {item.name}
                                                 </ThemedText>
-                                            </Pressable>
+                                    </Pressable>
                                         );
                                     })}
                                 </ScrollView>
@@ -1345,12 +1591,12 @@ export default function CreateScreen() {
                                 </View>
                             )}
 
-                            <Button
-                                title="Generate Design"
-                                variant="primary"
-                                size="large"
-                                disabled={!prompt}
+                            <LiquidGlassButton
                                 onPress={handleGenerate}
+                                title="Generate Design"
+                                colors={colors}
+                                liquidGlassStyles={liquidGlassStyles}
+                                glassGradients={glassGradients}
                             />
                         </AnimatedView>
                     )}
@@ -1459,23 +1705,195 @@ export default function CreateScreen() {
                 onRequestClose={() => setShowFullscreen(false)}
             >
                 <View className="flex-1 bg-black">
-                    {/* Close button */}
-                    <Pressable
-                        onPress={() => setShowFullscreen(false)}
-                        className="absolute top-4 right-4 z-10 bg-white/20 p-3 rounded-full"
-                        style={{ top: insets.top + 10 }}
+                    {/* Top bar with close button */}
+                    <View 
+                        className="absolute top-0 left-0 right-0 z-10 flex-row justify-between items-center px-4"
+                        style={{ paddingTop: insets.top + 10 }}
                     >
-                        <Icon name="X" size={24} color="white" />
-                    </Pressable>
+                        <Pressable
+                            onPress={() => setShowFullscreen(false)}
+                            className="bg-white/20 p-3 rounded-full"
+                        >
+                            <Icon name="X" size={24} color="white" />
+                        </Pressable>
+                        
+                        <ThemedText className="text-white text-sm opacity-60">
+                            Pinch to zoom
+                        </ThemedText>
+                        
+                        <View style={{ width: 48 }} />
+                    </View>
                     
-                    {/* Fullscreen image */}
+                    {/* Zoomable image */}
                     {resultImage && (
-                        <Image
-                            source={{ uri: resultImage }}
-                            className="flex-1"
-                            resizeMode="contain"
-                        />
+                        <ScrollView
+                            contentContainerStyle={{ 
+                                flex: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                            maximumZoomScale={5}
+                            minimumZoomScale={1}
+                            showsHorizontalScrollIndicator={false}
+                            showsVerticalScrollIndicator={false}
+                            centerContent
+                            bouncesZoom
+                        >
+                            <Image
+                                source={{ uri: resultImage }}
+                                style={{
+                                    width: SCREEN_WIDTH,
+                                    height: SCREEN_WIDTH,
+                                }}
+                                resizeMode="contain"
+                            />
+                        </ScrollView>
                     )}
+                    
+                    {/* Bottom action bar */}
+                    <View 
+                        className="absolute bottom-0 left-0 right-0 flex-row justify-center gap-6 px-6"
+                        style={{ paddingBottom: insets.bottom + 20 }}
+                    >
+                        {/* Save to Photos */}
+                        <Pressable
+                            onPress={async () => {
+                                if (!resultImage) return;
+                                try {
+                                    const filename = `NovaHogar_${Date.now()}.png`;
+                                    const cachePath = `${Paths.cache.uri}/${filename}`;
+                                    
+                                    // Download/save image to cache first
+                                    if (resultImage.startsWith('http')) {
+                                        const response = await fetch(resultImage);
+                                        const blob = await response.blob();
+                                        const reader = new FileReader();
+                                        reader.readAsDataURL(blob);
+                                        await new Promise<void>((resolve) => {
+                                            reader.onloadend = async () => {
+                                                const base64 = (reader.result as string).split(',')[1];
+                                                const file = new File(cachePath);
+                                                await file.write(base64, { encoding: 'base64' });
+                                                resolve();
+                                            };
+                                        });
+                                    } else if (resultImage.startsWith('data:')) {
+                                        const base64Data = resultImage.split(',')[1];
+                                        const file = new File(cachePath);
+                                        await file.write(base64Data, { encoding: 'base64' });
+                                    } else {
+                                        // Already a local file, copy it
+                                        const sourceFile = new File(resultImage);
+                                        const destFile = new File(cachePath);
+                                        await sourceFile.copy(destFile);
+                                    }
+                                    
+                                    // Save to media library
+                                    await MediaLibrary.saveToLibraryAsync(cachePath);
+                                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                                    Alert.alert('Saved!', 'Image saved to your photo library.');
+                                } catch (error) {
+                                    console.error('Failed to save image:', error);
+                                    Alert.alert('Error', 'Failed to save image to photos.');
+                                }
+                            }}
+                            className="items-center"
+                        >
+                            {supportsNativeLiquidGlass ? (
+                                <GlassView
+                                    style={{
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: 28,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                    glassEffectStyle="regular"
+                                    tintColor="rgba(255,255,255,0.2)"
+                                >
+                                    <Icon name="Download" size={24} color="white" />
+                                </GlassView>
+                            ) : (
+                                <View className="w-14 h-14 rounded-full bg-white/20 items-center justify-center">
+                                    <Icon name="Download" size={24} color="white" />
+                                </View>
+                            )}
+                            <ThemedText className="text-white text-xs mt-2 opacity-80">Save</ThemedText>
+                        </Pressable>
+                        
+                        {/* Share */}
+                        <Pressable
+                            onPress={async () => {
+                                if (!resultImage) return;
+                                try {
+                                    // Check if sharing is available
+                                    const isAvailable = await Sharing.isAvailableAsync();
+                                    if (!isAvailable) {
+                                        Alert.alert('Error', 'Sharing is not available on this device.');
+                                        return;
+                                    }
+                                    
+                                    const filename = `NovaHogar_${Date.now()}.png`;
+                                    const cachePath = `${Paths.cache.uri}/${filename}`;
+                                    
+                                    // Download/save image to cache first
+                                    if (resultImage.startsWith('http')) {
+                                        const response = await fetch(resultImage);
+                                        const blob = await response.blob();
+                                        const reader = new FileReader();
+                                        reader.readAsDataURL(blob);
+                                        await new Promise<void>((resolve) => {
+                                            reader.onloadend = async () => {
+                                                const base64 = (reader.result as string).split(',')[1];
+                                                const file = new File(cachePath);
+                                                await file.write(base64, { encoding: 'base64' });
+                                                resolve();
+                                            };
+                                        });
+                                    } else if (resultImage.startsWith('data:')) {
+                                        const base64Data = resultImage.split(',')[1];
+                                        const file = new File(cachePath);
+                                        await file.write(base64Data, { encoding: 'base64' });
+                                    } else {
+                                        // Already a local file, copy it
+                                        const sourceFile = new File(resultImage);
+                                        const destFile = new File(cachePath);
+                                        await sourceFile.copy(destFile);
+                                    }
+                                    
+                                    await Sharing.shareAsync(cachePath, {
+                                        mimeType: 'image/png',
+                                        dialogTitle: 'Share your NovaHogar design',
+                                    });
+                                } catch (error) {
+                                    console.error('Failed to share image:', error);
+                                    Alert.alert('Error', 'Failed to share image.');
+                                }
+                            }}
+                            className="items-center"
+                        >
+                            {supportsNativeLiquidGlass ? (
+                                <GlassView
+                                    style={{
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: 28,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                    glassEffectStyle="regular"
+                                    tintColor="rgba(255,255,255,0.2)"
+                                >
+                                    <Icon name="Share" size={24} color="white" />
+                                </GlassView>
+                            ) : (
+                                <View className="w-14 h-14 rounded-full bg-white/20 items-center justify-center">
+                                    <Icon name="Share" size={24} color="white" />
+                                </View>
+                            )}
+                            <ThemedText className="text-white text-xs mt-2 opacity-80">Share</ThemedText>
+                        </Pressable>
+                    </View>
                 </View>
             </Modal>
 
@@ -1489,7 +1907,7 @@ export default function CreateScreen() {
                     {/* Close button */}
                     <Pressable
                         onPress={() => setShowRecap(false)}
-                        className="absolute top-4 left-4 z-10 p-3"
+                        className="absolute top-10 left-4 z-10 p-3"
                         style={{ top: insets.top + 10 }}
                     >
                         <Icon name="X" size={24} color={colors.text} />
@@ -1512,7 +1930,7 @@ export default function CreateScreen() {
                                 </View>
                             )}
                             {selectedWall && (
-                                <View className="flex-row items-center gap-3">
+                                <View className="flex-row items-center gap-30">
                                     <View className="w-4 h-4 rounded-full" style={{ backgroundColor: '#B8A182' }} />
                                     <ThemedText className="text-lg" style={{ color: colors.text }}>
                                         {selectedWall} Wall Paint
@@ -1532,6 +1950,22 @@ export default function CreateScreen() {
                                     <View className="w-4 h-4 rounded-full" style={{ backgroundColor: '#D2C6B6' }} />
                                     <ThemedText className="text-lg" style={{ color: colors.text }}>
                                         {selectedFurnitureStyle} Furniture
+                                    </ThemedText>
+                                </View>
+                            )}
+                            {roomType && (
+                                <View className="flex-row items-center gap-3">
+                                    <View className="w-4 h-4 rounded-full" style={{ backgroundColor: colors.highlight }} />
+                                    <ThemedText className="text-lg" style={{ color: colors.text }}>
+                                        Room: {roomType}
+                                    </ThemedText>
+                                </View>
+                            )}
+                            {strictMode && (
+                                <View className="flex-row items-center gap-3">
+                                    <Icon name="Shield" size={16} color={colors.highlight} />
+                                    <ThemedText className="text-lg font-semibold" style={{ color: colors.highlight }}>
+                                        Strict Realism Mode
                                     </ThemedText>
                                 </View>
                             )}
@@ -1580,29 +2014,82 @@ export default function CreateScreen() {
                         </View>
                     </View>
 
-                    {/* Swipe to confirm slider */}
+                    {/* Swipe to confirm slider - Liquid Glass iOS 26 Style */}
                     <View 
                         className="px-6 pb-8"
                         style={{ paddingBottom: insets.bottom + 20 }}
                     >
                         <View 
-                            className="h-20 rounded-full overflow-hidden"
                             style={{ 
-                                backgroundColor: colors.secondary,
+                                height: 72,
                                 width: SLIDER_WIDTH,
                                 alignSelf: 'center',
-                                borderWidth: 1,
-                                borderColor: colors.border,
+                                borderRadius: 36,
+                                overflow: 'hidden',
                             }}
                         >
-                            {/* Track text */}
+                            {/* Liquid Glass Track */}
+                            {supportsNativeLiquidGlass ? (
+                                <GlassView
+                                    style={{
+                                        position: 'absolute',
+                                        width: '100%',
+                                        height: '100%',
+                                        borderRadius: 36,
+                                    }}
+                                    glassEffectStyle="regular"
+                                    tintColor={colors.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}
+                                />
+                            ) : (
+                                <BlurView
+                                    intensity={40}
+                                    tint={colors.isDark ? 'dark' : 'light'}
+                                    style={{
+                                        position: 'absolute',
+                                        width: '100%',
+                                        height: '100%',
+                                        borderRadius: 36,
+                                    }}
+                                >
+                                    <LinearGradient
+                                        colors={colors.isDark 
+                                            ? ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)'] as [string, string]
+                                            : ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.7)'] as [string, string]
+                                        }
+                                        style={{ flex: 1 }}
+                                    />
+                                </BlurView>
+                            )}
+                            
+                            {/* Subtle border */}
+                            <View 
+                                style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 36,
+                                    borderWidth: 1,
+                                    borderColor: colors.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                                }}
+                            />
+                            
+                            {/* Track text with chevrons */}
                             <View className="absolute inset-0 items-center justify-center flex-row gap-2">
-                                <ThemedText className="text-gray-500 font-medium text-lg">
-                                    I'm ready
+                                <Icon name="ChevronsRight" size={20} color={colors.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'} />
+                                <ThemedText 
+                                    style={{ 
+                                        color: colors.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
+                                        fontSize: 16,
+                                        fontWeight: '500',
+                                        letterSpacing: 0.5,
+                                    }}
+                                >
+                                    Slide to generate
                                 </ThemedText>
+                                <Icon name="ChevronsRight" size={20} color={colors.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'} />
                             </View>
                             
-                            {/* Slider button */}
+                            {/* Slider thumb - Liquid Glass Button */}
                             <Animated.View
                                 {...panResponder.panHandlers}
                                 style={{
@@ -1612,233 +2099,268 @@ export default function CreateScreen() {
                                     width: SLIDER_BUTTON_SIZE,
                                     height: SLIDER_BUTTON_SIZE,
                                     borderRadius: SLIDER_BUTTON_SIZE / 2,
-                                    backgroundColor: '#9B744D',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
                                     transform: [{ translateX: sliderPosition }],
-                                    shadowColor: '#9B744D',
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.2,
-                                    shadowRadius: 4,
+                                    overflow: 'hidden',
                                 }}
                             >
-                                <Icon name="ChevronRight" size={28} color="#FFFFFF" />
+                                {supportsNativeLiquidGlass ? (
+                                    <GlassView
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            borderRadius: SLIDER_BUTTON_SIZE / 2,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                        glassEffectStyle="regular"
+                                        tintColor="#4DA3E1"
+                                        isInteractive
+                                    >
+                                        <Icon name="ArrowRight" size={26} color="#FFFFFF" />
+                                    </GlassView>
+                                ) : (
+                                    <BlurView
+                                        intensity={80}
+                                        tint="default"
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            borderRadius: SLIDER_BUTTON_SIZE / 2,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            overflow: 'hidden',
+                                        }}
+                                    >
+                                        <LinearGradient
+                                            colors={['#4DA3E1', '#3B8BC9'] as [string, string]}
+                                            style={{
+                                                position: 'absolute',
+                                                width: '100%',
+                                                height: '100%',
+                                            }}
+                                        />
+                                        <Icon name="ArrowRight" size={26} color="#FFFFFF" />
+                                    </BlurView>
+                                )}
+                                {/* Highlight shine on thumb */}
+                                <View 
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        height: SLIDER_BUTTON_SIZE / 2,
+                                        borderTopLeftRadius: SLIDER_BUTTON_SIZE / 2,
+                                        borderTopRightRadius: SLIDER_BUTTON_SIZE / 2,
+                                        backgroundColor: 'rgba(255,255,255,0.25)',
+                                    }}
+                                />
                             </Animated.View>
                         </View>
+                        
+                        {/* Helper text */}
+                        <ThemedText 
+                            style={{ 
+                                textAlign: 'center', 
+                                marginTop: 12,
+                                fontSize: 13,
+                                color: colors.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)',
+                            }}
+                        >
+                            Swipe right to start AI generation
+                        </ThemedText>
                     </View>
                 </View>
             </Modal>
 
-            {/* Style Picker Modal */}
-            <Modal
+            {/* Style Picker - Animated Bottom Sheet */}
+            <AnimatedBottomSheet
                 visible={showStylePicker}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setShowStylePicker(false)}
+                onClose={() => setShowStylePicker(false)}
+                title="Select Style"
+                height={0.6}
             >
-                <Pressable 
-                    className="flex-1 bg-black/50 justify-end"
-                    onPress={() => setShowStylePicker(false)}
-                >
-                    <View 
-                        className="bg-background rounded-t-3xl max-h-[70%]"
-                        style={{ paddingBottom: insets.bottom + 20 }}
+                {STYLE_OPTIONS.map((option) => (
+                    <Pressable
+                        key={option}
+                        onPress={() => {
+                            setSelectedStyle(option);
+                            setShowStylePicker(false);
+                        }}
+                        className={`p-4 rounded-xl mb-3 flex-row items-center justify-between ${
+                            selectedStyle === option ? 'bg-highlight/20' : 'bg-secondary'
+                        }`}
+                        style={selectedStyle === option ? { borderWidth: 2, borderColor: colors.highlight } : { borderWidth: 1, borderColor: colors.border }}
                     >
-                        <View className="flex-row items-center justify-between p-4 border-b border-border">
-                            <ThemedText className="text-lg font-bold">Select Style</ThemedText>
-                            <Pressable onPress={() => setShowStylePicker(false)}>
-                                <Icon name="X" size={24} color={colors.text} />
-                            </Pressable>
+                        <View className="flex-row items-center gap-3">
+                            <Icon name="Sparkles" size={20} color={selectedStyle === option ? colors.highlight : colors.placeholder} />
+                            <ThemedText className={selectedStyle === option ? 'font-semibold' : ''}>
+                                {option}
+                            </ThemedText>
                         </View>
-                        <ScrollView className="p-4">
-                            {STYLE_OPTIONS.map((option) => (
-                                <Pressable
-                                    key={option}
-                                    onPress={() => {
-                                        setSelectedStyle(option);
-                                        setShowStylePicker(false);
-                                    }}
-                                    className={`p-4 rounded-xl mb-2 ${
-                                        selectedStyle === option ? 'bg-highlight/20' : 'bg-secondary'
-                                    }`}
-                                    style={selectedStyle === option ? { borderWidth: 1, borderColor: colors.highlight } : {}}
-                                >
-                                    <ThemedText className={selectedStyle === option ? 'font-semibold' : ''}>
-                                        {option}
-                                    </ThemedText>
-                                </Pressable>
-                            ))}
-                        </ScrollView>
-                    </View>
-                </Pressable>
-            </Modal>
+                        {selectedStyle === option && (
+                            <Icon name="Check" size={20} color={colors.highlight} />
+                        )}
+                    </Pressable>
+                ))}
+            </AnimatedBottomSheet>
 
-            {/* Wall Picker Modal */}
-            <Modal
+            {/* Wall Picker - Animated Bottom Sheet */}
+            <AnimatedBottomSheet
                 visible={showWallPicker}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setShowWallPicker(false)}
+                onClose={() => setShowWallPicker(false)}
+                title="Select Wall Treatment"
+                height={0.65}
             >
-                <Pressable 
-                    className="flex-1 bg-black/50 justify-end"
-                    onPress={() => setShowWallPicker(false)}
-                >
-                    <View 
-                        className="bg-background rounded-t-3xl max-h-[70%]"
-                        style={{ paddingBottom: insets.bottom + 20 }}
+                {WALL_OPTIONS.map((option) => (
+                    <Pressable
+                        key={option}
+                        onPress={() => {
+                            setSelectedWall(option);
+                            setShowWallPicker(false);
+                        }}
+                        className={`p-4 rounded-xl mb-3 flex-row items-center justify-between ${
+                            selectedWall === option ? 'bg-highlight/20' : 'bg-secondary'
+                        }`}
+                        style={selectedWall === option ? { borderWidth: 2, borderColor: colors.highlight } : { borderWidth: 1, borderColor: colors.border }}
                     >
-                        <View className="flex-row items-center justify-between p-4 border-b border-border">
-                            <ThemedText className="text-lg font-bold">Select Wall Finish</ThemedText>
-                            <Pressable onPress={() => setShowWallPicker(false)}>
-                                <Icon name="X" size={24} color={colors.text} />
-                            </Pressable>
+                        <View className="flex-row items-center gap-3">
+                            <Icon name="Square" size={20} color={selectedWall === option ? colors.highlight : colors.placeholder} />
+                            <ThemedText className={selectedWall === option ? 'font-semibold' : ''}>
+                                {option}
+                            </ThemedText>
                         </View>
-                        <ScrollView className="p-4">
-                            {WALL_OPTIONS.map((option) => (
-                                <Pressable
-                                    key={option}
-                                    onPress={() => {
-                                        setSelectedWall(option);
-                                        setShowWallPicker(false);
-                                    }}
-                                    className={`p-4 rounded-xl mb-2 ${
-                                        selectedWall === option ? 'bg-highlight/20' : 'bg-secondary'
-                                    }`}
-                                    style={selectedWall === option ? { borderWidth: 1, borderColor: colors.highlight } : {}}
-                                >
-                                    <ThemedText className={selectedWall === option ? 'font-semibold' : ''}>
-                                        {option}
-                                    </ThemedText>
-                                </Pressable>
-                            ))}
-                        </ScrollView>
-                    </View>
-                </Pressable>
-            </Modal>
+                        {selectedWall === option && (
+                            <Icon name="Check" size={20} color={colors.highlight} />
+                        )}
+                    </Pressable>
+                ))}
+            </AnimatedBottomSheet>
 
-            {/* Flooring Picker Modal */}
-            <Modal
+            {/* Flooring Picker - Animated Bottom Sheet with Image Thumbnails */}
+            <AnimatedBottomSheet
                 visible={showFlooringPicker}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setShowFlooringPicker(false)}
+                onClose={() => setShowFlooringPicker(false)}
+                title="Select Flooring"
+                height={0.75}
             >
-                <Pressable 
-                    className="flex-1 bg-black/50 justify-end"
-                    onPress={() => setShowFlooringPicker(false)}
+                <Pressable
+                    onPress={() => {
+                        setSelectedFlooring('');
+                        setSelectedFlooringSampleId(null);
+                        setShowFlooringPicker(false);
+                    }}
+                    className="p-3 rounded-xl border border-dashed border-border mb-4 items-center"
                 >
-                    <View 
-                        className="bg-background rounded-t-3xl max-h-[70%]"
-                        style={{ paddingBottom: insets.bottom + 20 }}
-                    >
-                        <View className="flex-row items-center justify-between p-4 border-b border-border">
-                            <ThemedText className="text-lg font-bold">Select Flooring</ThemedText>
-                            <Pressable onPress={() => setShowFlooringPicker(false)}>
-                                <Icon name="X" size={24} color={colors.text} />
-                            </Pressable>
-                        </View>
-                        <ScrollView className="p-4">
+                    <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                        No preference
+                    </ThemedText>
+                </Pressable>
+
+                <ThemedText className="text-sm font-semibold mb-3">Flooring samples</ThemedText>
+                <View className="flex-row flex-wrap justify-between">
+                    {flooringReferenceItems.map((item) => {
+                        const isSelected = selectedFlooringSampleId === item.id;
+                        return (
                             <Pressable
+                                key={item.id}
                                 onPress={() => {
-                                    setSelectedFlooring('');
-                                    setSelectedFlooringSampleId(null);
+                                    setSelectedFlooring(item.name);
+                                    setSelectedFlooringSampleId(item.id);
                                     setShowFlooringPicker(false);
                                 }}
-                                className="p-3 rounded-xl border border-dashed border-border mb-4 items-center"
+                                style={{ width: '48%', marginBottom: 12 }}
                             >
-                                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
-                                    No preference
+                                <View
+                                    className={`rounded-2xl overflow-hidden ${
+                                        isSelected ? 'border-2 border-highlight' : 'border border-border'
+                                    }`}
+                                    style={{ backgroundColor: colors.secondary }}
+                                >
+                                    <Image
+                                        source={item.image}
+                                        style={{ width: '100%', height: 100 }}
+                                        resizeMode="cover"
+                                    />
+                                    {isSelected && (
+                                        <View className="absolute top-2 right-2 w-6 h-6 bg-highlight rounded-full items-center justify-center">
+                                            <Icon name="Check" size={14} color="#FFFFFF" />
+                                        </View>
+                                    )}
+                                </View>
+                                <ThemedText className="text-sm font-medium mt-2 text-center">
+                                    {item.name}
                                 </ThemedText>
                             </Pressable>
+                        );
+                    })}
+                </View>
+            </AnimatedBottomSheet>
 
-                            <ThemedText className="text-sm font-semibold mb-3">Flooring samples</ThemedText>
-                            <View className="flex-row flex-wrap gap-3">
-                                {flooringReferenceItems.map((item) => {
-                                    const isSelected = selectedFlooringSampleId === item.id;
-                                    return (
-                                        <Pressable
-                                            key={item.id}
-                                            onPress={() => {
-                                                setSelectedFlooring(item.name);
-                                                setSelectedFlooringSampleId(item.id);
-                                                setShowFlooringPicker(false);
-                                            }}
-                                            className="w-[48%] mb-2"
-                                        >
-                                            <View
-                                                className={`rounded-2xl overflow-hidden border-2 ${
-                                                    isSelected ? 'border-highlight' : 'border-border'
-                                                }`}
-                                                style={{ backgroundColor: colors.secondary }}
-                                            >
-                                                <Image
-                                                    source={item.image}
-                                                    style={{ width: '100%', height: 120 }}
-                                                    resizeMode="cover"
-                                                />
-                                                {isSelected && (
-                                                    <View className="absolute top-2 right-2 w-6 h-6 bg-highlight rounded-full items-center justify-center">
-                                                        <Icon name="Check" size={14} color="#FFFFFF" />
-                                                    </View>
-                                                )}
-                                            </View>
-                                            <ThemedText className="text-sm font-medium mt-2 text-center">
-                                                {item.name}
-                                            </ThemedText>
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
-
-                        </ScrollView>
-                    </View>
-                </Pressable>
-            </Modal>
-
-            {/* Furniture Style Picker Modal */}
-            <Modal
+            {/* Furniture Style Picker - Animated Bottom Sheet */}
+            <AnimatedBottomSheet
                 visible={showFurnitureStylePicker}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setShowFurnitureStylePicker(false)}
+                onClose={() => setShowFurnitureStylePicker(false)}
+                title="Select Furniture Style"
+                height={0.6}
             >
-                <Pressable 
-                    className="flex-1 bg-black/50 justify-end"
-                    onPress={() => setShowFurnitureStylePicker(false)}
-                >
-                    <View 
-                        className="bg-background rounded-t-3xl max-h-[70%]"
-                        style={{ paddingBottom: insets.bottom + 20 }}
+                {FURNITURE_STYLE_OPTIONS.map((option) => (
+                    <Pressable
+                        key={option}
+                        onPress={() => {
+                            setSelectedFurnitureStyle(option);
+                            setShowFurnitureStylePicker(false);
+                        }}
+                        className={`p-4 rounded-xl mb-3 flex-row items-center justify-between ${
+                            selectedFurnitureStyle === option ? 'bg-highlight/20' : 'bg-secondary'
+                        }`}
+                        style={selectedFurnitureStyle === option ? { borderWidth: 2, borderColor: colors.highlight } : { borderWidth: 1, borderColor: colors.border }}
                     >
-                        <View className="flex-row items-center justify-between p-4 border-b border-border">
-                            <ThemedText className="text-lg font-bold">Select Furniture Style</ThemedText>
-                            <Pressable onPress={() => setShowFurnitureStylePicker(false)}>
-                                <Icon name="X" size={24} color={colors.text} />
-                            </Pressable>
+                        <View className="flex-row items-center gap-3">
+                            <Icon name="Armchair" size={20} color={selectedFurnitureStyle === option ? colors.highlight : colors.placeholder} />
+                            <ThemedText className={selectedFurnitureStyle === option ? 'font-semibold' : ''}>
+                                {option}
+                            </ThemedText>
                         </View>
-                        <ScrollView className="p-4">
-                            {FURNITURE_STYLE_OPTIONS.map((option) => (
-                                <Pressable
-                                    key={option}
-                                    onPress={() => {
-                                        setSelectedFurnitureStyle(option);
-                                        setShowFurnitureStylePicker(false);
-                                    }}
-                                    className={`p-4 rounded-xl mb-2 ${
-                                        selectedFurnitureStyle === option ? 'bg-highlight/20' : 'bg-secondary'
-                                    }`}
-                                    style={selectedFurnitureStyle === option ? { borderWidth: 1, borderColor: colors.highlight } : {}}
-                                >
-                                    <ThemedText className={selectedFurnitureStyle === option ? 'font-semibold' : ''}>
-                                        {option}
-                                    </ThemedText>
-                                </Pressable>
-                            ))}
-                        </ScrollView>
-                    </View>
-                </Pressable>
-            </Modal>
+                        {selectedFurnitureStyle === option && (
+                            <Icon name="Check" size={20} color={colors.highlight} />
+                        )}
+                    </Pressable>
+                ))}
+            </AnimatedBottomSheet>
+
+            {/* Room Type Picker - Animated Bottom Sheet */}
+            <AnimatedBottomSheet
+                visible={showRoomTypePicker}
+                onClose={() => setShowRoomTypePicker(false)}
+                title="Select Room Type"
+                height={0.6}
+            >
+                {ROOM_TYPE_OPTIONS.map((option) => (
+                    <Pressable
+                        key={option}
+                        onPress={() => {
+                            setRoomType(option);
+                            setShowRoomTypePicker(false);
+                        }}
+                        className={`p-4 rounded-xl mb-3 flex-row items-center justify-between ${
+                            roomType === option ? 'bg-highlight/20' : 'bg-secondary'
+                        }`}
+                        style={roomType === option ? { borderWidth: 2, borderColor: colors.highlight } : { borderWidth: 1, borderColor: colors.border }}
+                    >
+                        <View className="flex-row items-center gap-3">
+                            <Icon name="Home" size={20} color={roomType === option ? colors.highlight : colors.placeholder} />
+                            <ThemedText className={roomType === option ? 'font-semibold' : ''}>
+                                {option}
+                            </ThemedText>
+                        </View>
+                        {roomType === option && (
+                            <Icon name="Check" size={20} color={colors.highlight} />
+                        )}
+                    </Pressable>
+                ))}
+            </AnimatedBottomSheet>
+
         </View>
     );
 }

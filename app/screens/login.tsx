@@ -68,7 +68,7 @@ export default function LoginScreen() {
                     className="mb-4 !bg-highlight"
                     rounded="full"
                     textClassName='!text-white'
-                    href="/(drawer)/(tabs)/"
+                    href="/screens/onboarding-start"
                   />
                   <Link className='underline text-center text-text text-sm mb-4' href="/screens/forgot-password">
                     Forgot Password?

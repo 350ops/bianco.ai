@@ -14,7 +14,7 @@ export default function EditProfileScreen() {
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
@@ -47,7 +47,7 @@ export default function EditProfileScreen() {
                 className="w-28 h-28 rounded-full"
               />
             ) : (
-              <View className="w-28 h-28 rounded-full bg-secondary items-center justify-center">
+              <View className="w-28 h-28 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.05)' }}>
                 <Icon name="Plus" size={25} className="text-light-subtext dark:text-dark-subtext" />
               </View>
             )}
@@ -66,10 +66,10 @@ export default function EditProfileScreen() {
             )}
           </View>
         </View>
-        <View className='px-global pt-10 pb-4 bg-secondary rounded-2xl border border-border'>
+        <View className='px-global pt-10 pb-4 rounded-2xl'>
           <Input
             label="Nickname"
-            value="Thomino"
+            value=""
             variant='underlined'
             keyboardType="email-address"
             autoCapitalize="none"
@@ -77,7 +77,7 @@ export default function EditProfileScreen() {
           />
           <Input
             label="Name"
-            value="ThominoDesign"
+            value=""
             variant='underlined'
             containerClassName='flex-1'
             keyboardType="email-address"
@@ -86,7 +86,7 @@ export default function EditProfileScreen() {
           <Input
             label="Email"
             keyboardType="email-address"
-            value="thomino@example.com"
+            value=""
             variant='underlined'
             autoCapitalize="none"
             containerClassName='mb-0' />

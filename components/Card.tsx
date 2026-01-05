@@ -215,4 +215,6 @@ const Card: React.FC<CardProps> = ({
     return renderContent();
 };
 
+// Support both named and default imports
+export { Card };
 export default Card;

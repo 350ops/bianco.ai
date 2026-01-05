@@ -19,13 +19,13 @@ export default function EditProfileScreen() {
         <>
 
             <View className='flex-1'>
-                <ImageBackground source={require('@/assets/img/scify-2.jpg')} className='flex-1 bg-background px-global'>
+                <ImageBackground source={require('@/assets/img/bathr.png')} className='flex-1 bg-background px-global'>
                     <View style={{ paddingTop: insets.top }} className='justify-end items-end'>
                         <Icon name='X' onPress={() => router.back()} size={30} color="white"  />
                     </View>
                     <View className='flex-1 items-end justify-end'>
                         <View className='w-full my-10 pt-10 items-center'>
-                            <Text className='font-semibold text-white text-4xl text-center font-outfit-bold'>Picaso +</Text>
+                            <Text className='font-extrabold text-black text-4xl text-center font-outfit-bold'>novaHogar +</Text>
                             <Text className='text-lg text-white font-light mt-1 text-center'>Unlock all premium features</Text>
                         </View>
                         <View className=' flex-row gap-2 mx-auto mb-6'>
@@ -36,17 +36,17 @@ export default function EditProfileScreen() {
 
                         <SubscriptionCard
                             icon='Star'
-                            title='Weekly'
+                            title='Annual'
                             description='Unlock all premium features'
-                            price='$19.99'
-                            active={selectedPlan === 'Weekly'}
-                            onPress={() => setSelectedPlan('Weekly')}
+                            price='29 EUR'
+                            active={selectedPlan === 'Annual'}
+                            onPress={() => setSelectedPlan('Annual')}
                         />
                         <SubscriptionCard
                             icon='Trophy'
                             title='Monthly'
                             description='All premium features + goal tracker'
-                            price='$29.99'
+                            price='2.90 EUR'
                             discount='20%'
                             active={selectedPlan === 'Monthly'}
                             onPress={() => setSelectedPlan('Monthly')}
@@ -54,7 +54,7 @@ export default function EditProfileScreen() {
 
                     </View>
                     <ThemedFooter className='bg-transparent mt-auto'>
-                        <Text className='text-sm text-white font-light text-center mb-4'>1 month free trial then $29.99/month</Text>
+                        <Text className='text-sm text-white font-light text-center mb-4'>1 month free trial then 2.90 EUR/month</Text>
                         <Button onPress={() => actionSheetRef.current?.show()} className='!bg-highlight' textClassName='!text-white' size='large' rounded='full' title="Upgrade to plus" />
                     </ThemedFooter>
 
@@ -72,7 +72,7 @@ export default function EditProfileScreen() {
                     <Icon name='Check' size={24} className='w-20 h-20 bg-background rounded-full mb-6' />
                     <ThemedText className='font-semibold text-4xl'>All setup</ThemedText>
                     <ThemedText className='text-lg text-center px-14 font-light mt-2 mb-32'>Hope you are satisfied. We will update you for the next subscription date.</ThemedText>
-                    <Button onPress={() => actionSheetRef.current?.hide()} className='!bg-highlight !px-10' textClassName='!text-black' size='large' rounded='full' title="Upgrade to plus" />
+                    <Button onPress={() => actionSheetRef.current?.hide()} className='!bg-highlight !px-10' textClassName='!text-white' size='large' rounded='full' title="Upgrade to plus" />
                 </View>
             </ActionSheetThemed>
         </>

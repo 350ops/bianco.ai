@@ -245,6 +245,8 @@ const Header: React.FC<HeaderProps> = ({
   );
 };
 
+// Support both named and default imports
+export { Header };
 export default Header;
 
 type HeaderItemProps = {

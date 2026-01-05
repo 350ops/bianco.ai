@@ -118,4 +118,6 @@ export const Section: React.FC<SectionProps> = ({
     );
 };
 
+// Section is already exported as named above (export const Section)
+// Also export as default for flexibility
 export default Section; 

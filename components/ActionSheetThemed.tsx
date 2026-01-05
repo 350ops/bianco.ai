@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import ActionSheet, { ActionSheetProps, ActionSheetRef } from 'react-native-actions-sheet';
 import useThemeColors from '@/app/contexts/ThemeColors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { View } from 'react-native';
+import { View, ViewStyle } from 'react-native';
 
 
 interface ActionSheetThemedProps extends ActionSheetProps { }
@@ -15,18 +15,24 @@ const ActionSheetThemed = forwardRef<ActionSheetRef, ActionSheetThemedProps>(({ 
             <ActionSheet
                 {...props}
                 ref={ref}
-
+                // Disable deprecated SafeAreaView by providing our own insets
+                safeAreaInsets={{ top: insets.top, bottom: insets.bottom, left: 0, right: 0 }}
                 containerStyle={{
                     backgroundColor: colors.secondary,
                     paddingTop: 5,
                     borderTopLeftRadius: 20,
                     borderTopRightRadius: 20,
                     paddingBottom: insets.bottom,
-                    ...containerStyle
+                    ...(containerStyle as any)
                 }}
             />
         </View>
     );
 });
 
+// Add displayName for forwardRef component
+ActionSheetThemed.displayName = 'ActionSheetThemed';
+
+// Support both named and default imports
+export { ActionSheetThemed };
 export default ActionSheetThemed;
