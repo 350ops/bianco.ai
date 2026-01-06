@@ -10,7 +10,6 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 
 import ThemedText from '@/components/ThemedText';
 import Icon from '@/components/Icon';
@@ -43,8 +42,18 @@ import {
     formatCurrency,
 } from '@/app/lib/itemizedEstimateService';
 
-// Check if native liquid glass is available
-const supportsNativeLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
+// Safely check if liquid glass is available (iOS 26+)
+let supportsNativeLiquidGlass = false;
+let GlassView: any = View;
+try {
+    const glassEffect = require('expo-glass-effect');
+    if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
+        supportsNativeLiquidGlass = true;
+        GlassView = glassEffect.GlassView;
+    }
+} catch (e) {
+    // expo-glass-effect not available
+}
 const PRIMARY_BLUE = '#4DA3E1';
 
 // Form data type

@@ -6,7 +6,6 @@ import { File } from "expo-file-system/next";
 import * as Sharing from "expo-sharing";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 
 import Header from "@/components/Header";
 import { ThemedText } from "@/components/ThemedText";
@@ -14,8 +13,18 @@ import AnimatedView from "@/components/AnimatedView";
 import useThemeColors from "@/app/contexts/ThemeColors";
 import Icon from "@/components/Icon";
 
-// Check if native liquid glass is available (iOS 26+)
-const supportsNativeLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
+// Safely check if liquid glass is available (iOS 26+)
+let supportsNativeLiquidGlass = false;
+let GlassView: any = View;
+try {
+    const glassEffect = require('expo-glass-effect');
+    if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
+        supportsNativeLiquidGlass = true;
+        GlassView = glassEffect.GlassView;
+    }
+} catch (e) {
+    // expo-glass-effect not available
+}
 
 // Primary blue from palette
 const PRIMARY_BLUE = '#4DA3E1';

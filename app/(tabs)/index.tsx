@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Pressable, Image, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Pressable, Image, ScrollView, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 
@@ -8,6 +8,25 @@ import Icon from '@/components/Icon';
 import AnimatedView from '@/components/AnimatedView';
 import useThemeColors from '@/app/contexts/ThemeColors';
 import { FEATURED_DESIGNS } from '@/app/data/featuredDesigns';
+import BeforeAfterSlider from '@/components/BeforeAfterSlider';
+import WebView3DModel from '@/components/WebView3DModel';
+
+// 3D furniture models hosted on GitHub
+// Use raw.githubusercontent.com for direct file access (not the GitHub page URL)
+const FURNITURE_3D_MODELS = [
+    'https://raw.githubusercontent.com/350ops/3dar/main/Untitled232.glb',
+];
+
+// Furniture images for the showcase (fallback)
+const FURNITURE_IMAGES = [
+    require('@/assets/img/Mueble1 Background Removed.png'),
+    require('@/assets/img/Mueble2 Background Removed.png'),
+    require('@/assets/img/Mueble4 Background Removed.png'),
+    require('@/assets/img/Mueble5 Background Removed.png'),
+    require('@/assets/img/Mueble7 Background Removed.png'),
+];
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Tips for better results
 const TIPS = [
@@ -68,8 +87,53 @@ export default function ExploreScreen() {
                     </Link>
                 </AnimatedView>
 
+                {/* Interactive 3D Model Viewer */}
+                <AnimatedView animation="fadeInUp" delay={50} className="mt-6 px-4">
+                    <View className="mb-3">
+                        <ThemedText className="text-lg font-bold">3D Furniture Preview</ThemedText>
+                        <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                            Pinch to zoom • Drag to rotate • Two fingers to pan
+                        </ThemedText>
+                    </View>
+                    <View 
+                        style={{ 
+                            width: SCREEN_WIDTH - 32, 
+                            height: 320, 
+                            borderRadius: 20,
+                            overflow: 'hidden',
+                            backgroundColor: colors.bg,
+                        }}
+                    >
+                        <WebView3DModel
+                            modelUrl={FURNITURE_3D_MODELS[0]}
+                            width={SCREEN_WIDTH - 32}
+                            height={320}
+                            autoRotate={true}
+                            cameraControls={true}
+                            backgroundColor={colors.bg}
+                        />
+                    </View>
+                </AnimatedView>
+
+                {/* Before/After Demo */}
+                <AnimatedView animation="fadeInUp" delay={100} className="mt-6 px-4">
+                    <View className="mb-3">
+                        <ThemedText className="text-lg font-bold">See the Transformation</ThemedText>
+                        <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                            Drag the slider to compare before & after
+                        </ThemedText>
+                    </View>
+                    <BeforeAfterSlider
+                        beforeImage={require('@/assets/img/IMG_1238.jpg')}
+                        afterImage={require('@/assets/img/IMG_1239.jpg')}
+                        width={SCREEN_WIDTH - 32}
+                        height={280}
+                        borderRadius={20}
+                    />
+                </AnimatedView>
+
                 {/* Featured Designs */}
-                <AnimatedView animation="fadeInUp" delay={100} className="mt-8">
+                <AnimatedView animation="fadeInUp" delay={150} className="mt-8">
                     <View className="flex-row items-center justify-between px-global mb-4">
                         <ThemedText className="text-lg font-bold">Get Inspired</ThemedText>
                         <Pressable>
@@ -102,7 +166,7 @@ export default function ExploreScreen() {
                 </AnimatedView>
 
                 {/* Tips Section */}
-                <AnimatedView animation="fadeInUp" delay={200} className="mt-8" style={{ paddingHorizontal: 4 }}>
+                <AnimatedView animation="fadeInUp" delay={250} className="mt-8" style={{ paddingHorizontal: 4 }}>
                     <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
                         <ThemedText className="text-3xl font-black">Tips for Better Results</ThemedText>
                     </View>
@@ -153,7 +217,7 @@ export default function ExploreScreen() {
                 </AnimatedView>
 
                 {/* Stats Section */}
-                <AnimatedView animation="fadeInUp" delay={300} className="mt-8" style={{ paddingHorizontal: 4 }}>
+                <AnimatedView animation="fadeInUp" delay={350} className="mt-8" style={{ paddingHorizontal: 4 }}>
                     <View className="bg-gray-100  border-border   rounded-3xl p-6">
                         <ThemedText className="text-lg font-bold mb-4">Your Activity</ThemedText>
                         <View className="flex-row">

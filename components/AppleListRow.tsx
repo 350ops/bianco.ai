@@ -1,12 +1,21 @@
 import React from 'react';
 import { View, Pressable, StyleSheet, Platform } from 'react-native';
-import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import ThemedText from '@/components/ThemedText';
 import Icon, { IconName } from '@/components/Icon';
 import useThemeColors from '@/app/contexts/ThemeColors';
 
-// Check if liquid glass is available (iOS 26+)
-const supportsLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
+// Safely check if liquid glass is available (iOS 26+)
+let supportsLiquidGlass = false;
+let GlassView: any = View;
+try {
+    const glassEffect = require('expo-glass-effect');
+    if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
+        supportsLiquidGlass = true;
+        GlassView = glassEffect.GlassView;
+    }
+} catch (e) {
+    // expo-glass-effect not available
+}
 
 interface AppleListRowProps {
     title: string;

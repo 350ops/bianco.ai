@@ -1,12 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Pressable, Animated, Switch as RNSwitch, TouchableOpacity, StyleProp, ViewStyle, Platform } from 'react-native';
-import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import ThemedText from '../ThemedText';
 import Icon, { IconName } from '../Icon';
 import useThemeColors from '@/app/contexts/ThemeColors';
 
-// Check if liquid glass is available (iOS 26+)
-const useGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
+// Safely check if liquid glass is available (iOS 26+)
+let useGlass = false;
+let GlassView: any = View;
+try {
+  const glassEffect = require('expo-glass-effect');
+  if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
+    useGlass = true;
+    GlassView = glassEffect.GlassView;
+  }
+} catch (e) {
+  // expo-glass-effect not available (running in Expo Go or unsupported platform)
+}
 
 interface SwitchProps {
   value?: boolean;

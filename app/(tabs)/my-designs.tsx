@@ -176,7 +176,7 @@ export default function MyDesignsScreen() {
                         />
                     </View>
                 </View>
-
+\].
                 {/* Prompt */}
                 <View className="px-4 pb-4" style={{ paddingBottom: insets.bottom + 16 }}>
                     <ThemedText className="text-white/60 text-xs mb-1">Prompt</ThemedText>

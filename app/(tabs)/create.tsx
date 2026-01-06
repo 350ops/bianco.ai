@@ -10,10 +10,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
+import { editImageWithOpenAI } from "@/lib/openai";
 
-// Check if native liquid glass is available (iOS 26+)
-const supportsNativeLiquidGlass = Platform.OS === 'ios' && isLiquidGlassAvailable();
+
+// Safely check if liquid glass is available (iOS 26+)
+let supportsNativeLiquidGlass = false;
+let GlassView: any = View;
+try {
+    const glassEffect = require('expo-glass-effect');
+    if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
+        supportsNativeLiquidGlass = true;
+        GlassView = glassEffect.GlassView;
+    }
+} catch (e) {
+    // expo-glass-effect not available
+}
 
 import { Button } from '@/components/Button';
 import ThemedText from '@/components/ThemedText';
@@ -1033,15 +1044,9 @@ Output must appear as a real photograph, not a 3D render.`;
             formData.append('input_fidelity', 'high');
             formData.append('n', '1');
             formData.append('size', '1024x1024');
-            formData.append('model', 'gpt-image-1'); // Using 1.5 for better multi-image support
+            formData.append('model', 'gpt-image-1'); // Using 1 for better multi-image support
 
-            const response = await fetch('https://api.openai.com/v1/images/edits', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                },
-                body: formData,
-            });
+            const response = await editImageWithOpenAI(formData);
 
             const responseText = await response.text();
             let data;

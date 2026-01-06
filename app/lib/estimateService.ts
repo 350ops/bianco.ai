@@ -1,7 +1,7 @@
 // NovaHogar Estimate Calculation Service
 // Handles local calculations and Supabase persistence
 
-import { supabase, isSupabaseConfigured } from './supabase';
+import { getSupabase, isSupabaseConfigured } from './supabase';
 import {
     PRICING_VERSION,
     BASE_RATE_PER_M2,
@@ -182,7 +182,9 @@ export const saveEstimateToSupabase = async (
     formData: ProjectFormData,
     result: EstimateResult
 ): Promise<string | null> => {
-    if (!isSupabaseConfigured()) {
+    const supabase = getSupabase();
+    
+    if (!isSupabaseConfigured() || !supabase) {
         console.log('Supabase not configured, saving locally');
         return saveEstimateLocally(formData, result);
     }
