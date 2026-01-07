@@ -1,14 +1,14 @@
+import { Link, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { View, Image, Pressable } from 'react-native';
-import { Link, useLocalSearchParams } from 'expo-router';
 
-import Header from '@/components/Header';
-import ThemedText from '@/components/ThemedText';
-import ThemedScroller from '@/components/ThemeScroller';
-import { Chip } from '@/components/Chip';
-import { Placeholder } from '@/components/Placeholder';
 import useThemeColors from '@/app/contexts/ThemeColors';
-import { getFeaturedDesign } from '@/app/data/featuredDesigns';
+import { Chip } from '@/components/Chip';
+import Header from '@/components/Header';
+import { Placeholder } from '@/components/Placeholder';
+import ThemedScroller from '@/components/ThemeScroller';
+import ThemedText from '@/components/ThemedText';
+import { getFeaturedDesign } from '@/data/featuredDesigns';
 
 export default function FeaturedDesignScreen() {
   const colors = useThemeColors();
@@ -34,25 +34,25 @@ export default function FeaturedDesignScreen() {
     <View className="flex-1 bg-background">
       <Header showBackButton title={design.title} />
       <ThemedScroller className="!px-0 !pt-0">
-        <Image source={design.image} className="w-full h-64" resizeMode="cover" />
+        <Image source={design.image} className="h-64 w-full" resizeMode="cover" />
 
-        <View className="px-global pt-4 pb-10">
+        <View className="px-global pb-10 pt-4">
           <View className="flex-row items-center justify-between">
-            <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+            <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
               {design.room}
             </ThemedText>
-            <View className="bg-secondary rounded-full px-3 py-1">
+            <View className="rounded-full bg-secondary px-3 py-1">
               <ThemedText className="text-xs font-semibold">{design.style}</ThemedText>
             </View>
           </View>
 
-          <ThemedText className="text-lg font-bold mt-3">Look and Feel</ThemedText>
-          <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext mt-2">
+          <ThemedText className="mt-3 text-lg font-bold">Look and Feel</ThemedText>
+          <ThemedText className="text-light-subtext dark:text-dark-subtext mt-2 text-sm">
             {design.description}
           </ThemedText>
 
           {design.tags.length > 0 && (
-            <View className="flex-row flex-wrap gap-2 mt-4">
+            <View className="mt-4 flex-row flex-wrap gap-2">
               {design.tags.map((tag) => (
                 <Chip key={tag} label={tag} size="sm" />
               ))}
@@ -60,27 +60,27 @@ export default function FeaturedDesignScreen() {
           )}
 
           <View className="mt-6">
-            <ThemedText className="text-lg font-bold mb-3">Key Elements</ThemedText>
+            <ThemedText className="mb-3 text-lg font-bold">Key Elements</ThemedText>
             <View className="gap-2">
               {design.keyElements.map((element) => (
                 <View key={element} className="flex-row items-start gap-2">
                   <View
-                    className="w-2 h-2 rounded-full mt-2"
+                    className="mt-2 h-2 w-2 rounded-full"
                     style={{ backgroundColor: colors.accent }}
                   />
-                  <ThemedText className="text-sm flex-1">{element}</ThemedText>
+                  <ThemedText className="flex-1 text-sm">{element}</ThemedText>
                 </View>
               ))}
             </View>
           </View>
 
           <View className="mt-6">
-            <ThemedText className="text-lg font-bold mb-3">Palette</ThemedText>
+            <ThemedText className="mb-3 text-lg font-bold">Palette</ThemedText>
             <View className="flex-row gap-3">
               {design.palette.map((color) => (
                 <View
                   key={color}
-                  className="w-10 h-10 rounded-full border"
+                  className="h-10 w-10 rounded-full border"
                   style={{ backgroundColor: color, borderColor: colors.border }}
                 />
               ))}
@@ -88,8 +88,8 @@ export default function FeaturedDesignScreen() {
           </View>
 
           <Link href="/(tabs)/create" asChild>
-            <Pressable className="mt-8 bg-text rounded-full py-4 items-center">
-              <ThemedText className="text-white font-semibold">Use this style</ThemedText>
+            <Pressable className="mt-8 items-center rounded-full bg-text py-4">
+              <ThemedText className="font-semibold text-white">Use this style</ThemedText>
             </Pressable>
           </Link>
         </View>

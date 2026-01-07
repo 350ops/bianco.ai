@@ -1,9 +1,11 @@
 import React, { ReactNode } from 'react';
 import { View, Pressable, StyleProp, ViewStyle } from 'react-native';
-import ThemedText from '../ThemedText';
-import Icon, { IconName } from '../Icon';
-import useThemeColors from '@/app/contexts/ThemeColors';
+
 import AnimatedView from '../AnimatedView';
+import Icon, { IconName } from '../Icon';
+import ThemedText from '../ThemedText';
+
+import useThemeColors from '@/app/contexts/ThemeColors';
 
 interface SelectableProps {
   title: string;
@@ -35,50 +37,44 @@ const Selectable: React.FC<SelectableProps> = ({
   const colors = useThemeColors();
 
   return (
-    <View className={`mb-4 ${containerClassName}`} >
+    <View className={`mb-4 ${containerClassName}`}>
       <Pressable
         onPress={onPress}
         style={style}
         className={`
-          border rounded-2xl p-4 active:opacity-70 bg-secondary
+          rounded-2xl border bg-secondary p-4 active:opacity-70
           ${selected ? 'border-highlight' : 'border-border'}
           ${error ? 'border-red-500' : ''}
           ${className}
-        `}
-      >
+        `}>
         <View className="flex-row items-center">
           {icon && (
-            <View className={`mr-4 h-16 w-16 rounded-xl items-center justify-center ${selected ? 'bg-highlight' : 'bg-background'}`}>
-              <Icon 
-                name={icon} 
-                size={24} 
+            <View
+              className={`mr-4 h-16 w-16 items-center justify-center rounded-xl ${selected ? 'bg-highlight' : 'bg-background'}`}>
+              <Icon
+                name={icon}
+                size={24}
                 strokeWidth={1.5}
                 color={iconColor || (selected ? colors.invert : colors.icon)}
               />
             </View>
           )}
           {customIcon && (
-            <View className="mr-4 h-12 w-12 rounded-xl items-center justify-center bg-secondary  dark:bg-dark-secondary">
+            <View className="dark:bg-dark-secondary mr-4 h-12 w-12 items-center justify-center rounded-xl  bg-secondary">
               {customIcon}
             </View>
           )}
           <View className="flex-1">
-            <ThemedText className="font-semibold text-base">
-              {title}
-            </ThemedText>
+            <ThemedText className="text-base font-semibold">{title}</ThemedText>
             {description && (
-              <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext mt-0">
+              <ThemedText className="text-light-subtext dark:text-dark-subtext mt-0 text-sm">
                 {description}
               </ThemedText>
             )}
           </View>
           {selected ? (
             <AnimatedView className="ml-3" animation="bounceIn" duration={500}>
-              <Icon 
-                name="CheckCircle2" 
-                size={24} 
-                color={colors.highlight}
-              />
+              <Icon name="CheckCircle2" size={24} color={colors.highlight} />
             </AnimatedView>
           ) : (
             <></>
@@ -86,13 +82,9 @@ const Selectable: React.FC<SelectableProps> = ({
         </View>
       </Pressable>
 
-      {error && (
-        <ThemedText className="text-red-500 text-xs mt-1">
-          {error}
-        </ThemedText>
-      )}
+      {error && <ThemedText className="mt-1 text-xs text-red-500">{error}</ThemedText>}
     </View>
   );
 };
 
-export default Selectable; 
+export default Selectable;

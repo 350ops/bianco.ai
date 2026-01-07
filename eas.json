@@ -6,10 +6,7 @@
   "build": {
     
     "development": {
-"env": {
-  "EXPO_PUBLIC_OPENAI_API_KEY": "oj-1234567890",
-  "EXPO_PUBLIC_SUPABASE_URL": "https://oycjgvhhobjzoohjlqmx.supabase.co"
-},
+      
       "developmentClient": true,
       "distribution": "internal"
     },

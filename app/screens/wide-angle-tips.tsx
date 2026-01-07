@@ -1,13 +1,13 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import Header from '@/components/Header';
-import ThemedText from '@/components/ThemedText';
-import AnimatedView from '@/components/AnimatedView';
-import Icon from '@/components/Icon';
 import useThemeColors from '@/app/contexts/ThemeColors';
+import AnimatedView from '@/components/AnimatedView';
+import Header from '@/components/Header';
+import Icon from '@/components/Icon';
+import ThemedText from '@/components/ThemedText';
 
 const toRgba = (hexColor: string, alpha: number) => {
   if (!hexColor.startsWith('#')) {
@@ -86,7 +86,7 @@ export default function WideAngleTipsScreen() {
       <Header showBackButton title="Wide angle" />
       <View className="flex-1 px-global" style={{ paddingBottom: insets.bottom + 20 }}>
         <AnimatedView animation="fadeInUp">
-          <View className="rounded-3xl overflow-hidden border border-border mb-6">
+          <View className="mb-6 overflow-hidden rounded-3xl border border-border">
             <View style={[styles.scene, { backgroundColor: colors.secondary }]}>
               <LinearGradient
                 colors={[
@@ -96,7 +96,9 @@ export default function WideAngleTipsScreen() {
                 style={StyleSheet.absoluteFill}
               />
 
-              <View style={[styles.room, { borderColor: colors.border, backgroundColor: colors.bg }]} />
+              <View
+                style={[styles.room, { borderColor: colors.border, backgroundColor: colors.bg }]}
+              />
               <View style={[styles.roomLine, { backgroundColor: colors.border }]} />
               <View style={[styles.roomLineVertical, { backgroundColor: colors.border }]} />
 
@@ -132,7 +134,8 @@ export default function WideAngleTipsScreen() {
                 ]}
               />
 
-              <View style={[styles.camera, { borderColor: colors.border, backgroundColor: colors.bg }]}>
+              <View
+                style={[styles.camera, { borderColor: colors.border, backgroundColor: colors.bg }]}>
                 <Icon name="Camera" size={18} color={colors.text} />
               </View>
 
@@ -142,8 +145,8 @@ export default function WideAngleTipsScreen() {
         </AnimatedView>
 
         <AnimatedView animation="fadeInUp" delay={120}>
-          <ThemedText className="text-2xl font-bold mb-2">Capture the whole room</ThemedText>
-          <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext mb-4">
+          <ThemedText className="mb-2 text-2xl font-bold">Capture the whole room</ThemedText>
+          <ThemedText className="text-light-subtext dark:text-dark-subtext mb-4 text-sm">
             Step back, keep the phone level, and use a wide lens so walls and corners stay visible.
           </ThemedText>
         </AnimatedView>
@@ -151,36 +154,36 @@ export default function WideAngleTipsScreen() {
         <AnimatedView animation="fadeInUp" delay={220}>
           <View className="gap-3">
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Maximize" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Use 0.5x or wide lens</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Wide angle captures the full space without cutting off furniture.
                 </ThemedText>
               </View>
             </View>
 
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Camera" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Keep the camera level</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Level shots prevent walls from leaning and keep proportions accurate.
                 </ThemedText>
               </View>
             </View>
 
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Square" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Center the room</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Place the main focal point in the middle for balanced framing.
                 </ThemedText>
               </View>

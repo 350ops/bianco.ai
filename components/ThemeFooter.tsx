@@ -10,10 +10,9 @@ export default function ThemedFooter({ children, className, ...props }: ThemeFoo
   const insets = useSafeAreaInsets();
   return (
     <View
-      style={{paddingBottom: insets.bottom}}
-      className={`bg-background px-global pt-4 w-full ${className || ''}`}
-      {...props}
-    >
+      style={{ paddingBottom: insets.bottom }}
+      className={`w-full bg-background px-global pt-4 ${className || ''}`}
+      {...props}>
       {children}
     </View>
   );

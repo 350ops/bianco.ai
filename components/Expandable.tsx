@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { View, Pressable, Animated, Platform, UIManager, ViewStyle } from 'react-native';
+
 import Icon, { IconName } from './Icon';
 import ThemedText from './ThemedText';
+
 import useThemeColors from '@/app/contexts/ThemeColors';
 
 if (Platform.OS === 'android') {
@@ -29,12 +31,12 @@ const Expandable: React.FC<ExpandableProps> = ({
   expanded,
   onPress,
   className,
-  style
+  style,
 }) => {
   const colors = useThemeColors();
   const [isExpanded, setIsExpanded] = useState(expanded ?? defaultExpanded);
-  const rotateAnim = useRef(new Animated.Value(expanded ?? defaultExpanded ? 1 : 0)).current;
-  const heightAnim = useRef(new Animated.Value(expanded ?? defaultExpanded ? 1 : 0)).current;
+  const rotateAnim = useRef(new Animated.Value((expanded ?? defaultExpanded) ? 1 : 0)).current;
+  const heightAnim = useRef(new Animated.Value((expanded ?? defaultExpanded) ? 1 : 0)).current;
 
   const toggleExpand = () => {
     const toValue = isExpanded ? 0 : 1;
@@ -51,56 +53,47 @@ const Expandable: React.FC<ExpandableProps> = ({
         toValue,
         duration: 300,
         useNativeDriver: false,
-      })
+      }),
     ]).start();
   };
 
   return (
     <View className={`border-b border-border ${className}`} style={style}>
-      <Pressable
-        onPress={toggleExpand}
-        className="flex-row items-center py-4 pl-2 pr-4"
-      >
+      <Pressable onPress={toggleExpand} className="flex-row items-center py-4 pl-2 pr-4">
         {icon && (
-         <View 
-           className="mr-2 h-12 w-12 rounded-full items-center justify-center"
-           style={{ backgroundColor: colors.accentLight }}
-         >
+          <View
+            className="mr-2 h-12 w-12 items-center justify-center rounded-full"
+            style={{ backgroundColor: colors.accentLight }}>
             <Icon name={icon} size={20} color={colors.iconAccent} />
           </View>
         )}
         <View className="flex-1">
           <ThemedText className="text-base font-semibold">{title}</ThemedText>
-          {description && (
-            <ThemedText className="text-xs opacity-50">
-              {description}
-            </ThemedText>
-          )}
+          {description && <ThemedText className="text-xs opacity-50">{description}</ThemedText>}
         </View>
-        <Animated.View style={{
-          transform: [{
-            rotate: rotateAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: ['0deg', '180deg']
-            })
-          }]
-        }}>
-          <Icon
-            name="ChevronDown"
-            size={20}
-          />
+        <Animated.View
+          style={{
+            transform: [
+              {
+                rotate: rotateAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0deg', '180deg'],
+                }),
+              },
+            ],
+          }}>
+          <Icon name="ChevronDown" size={20} />
         </Animated.View>
       </Pressable>
-      <Animated.View 
+      <Animated.View
         style={{
           maxHeight: heightAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 1000]
+            outputRange: [0, 1000],
           }),
           opacity: heightAnim,
-          overflow: 'hidden'
-        }}
-      >
+          overflow: 'hidden',
+        }}>
         <View className="px-4 pb-4 pt-4">{children}</View>
       </Animated.View>
     </View>

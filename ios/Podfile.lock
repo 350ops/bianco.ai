@@ -221,9 +221,6 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (14.0.9):
     - ExpoModulesCore
-  - ExpoGL (16.0.9):
-    - ExpoModulesCore
-    - ReactCommon/turbomodule/core
   - ExpoGlassEffect (0.1.8):
     - ExpoModulesCore
   - ExpoHaptics (15.0.7):
@@ -276,6 +273,8 @@ PODS:
   - ExpoSharing (14.0.7):
     - ExpoModulesCore
   - ExpoSplashScreen (31.0.13):
+    - ExpoModulesCore
+  - ExpoUI (0.2.0-beta.9):
     - ExpoModulesCore
   - ExpoVideo (3.0.14):
     - ExpoModulesCore
@@ -1768,6 +1767,28 @@ PODS:
     - Yoga
   - react-native-viewpager (5.0.11):
     - React-Core
+  - react-native-webview (13.16.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - React-NativeModulesApple (0.81.5):
     - hermes-engine
     - React-callinvoker
@@ -2450,7 +2471,6 @@ DEPENDENCIES:
   - ExpoCamera (from `../node_modules/expo-camera/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
-  - ExpoGL (from `../node_modules/expo-gl`)
   - ExpoGlassEffect (from `../node_modules/expo-glass-effect/ios`)
   - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
   - ExpoHead (from `../node_modules/expo-router/ios`)
@@ -2465,6 +2485,7 @@ DEPENDENCIES:
   - ExpoRoomplan (from `../node_modules/expo-roomplan/ios`)
   - ExpoSharing (from `../node_modules/expo-sharing/ios`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
+  - "ExpoUI (from `../node_modules/@expo/ui/ios`)"
   - ExpoVideo (from `../node_modules/expo-video/ios`)
   - EXStructuredHeaders (from `../node_modules/expo-structured-headers/ios`)
   - EXUpdates (from `../node_modules/expo-updates/ios`)
@@ -2510,6 +2531,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - "react-native-viewpager (from `../node_modules/@react-native-community/viewpager`)"
+  - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -2594,8 +2616,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
     :path: "../node_modules/expo-font/ios"
-  ExpoGL:
-    :path: "../node_modules/expo-gl"
   ExpoGlassEffect:
     :path: "../node_modules/expo-glass-effect/ios"
   ExpoHaptics:
@@ -2624,6 +2644,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-sharing/ios"
   ExpoSplashScreen:
     :path: "../node_modules/expo-splash-screen/ios"
+  ExpoUI:
+    :path: "../node_modules/@expo/ui/ios"
   ExpoVideo:
     :path: "../node_modules/expo-video/ios"
   EXStructuredHeaders:
@@ -2713,6 +2735,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/slider"
   react-native-viewpager:
     :path: "../node_modules/@react-native-community/viewpager"
+  react-native-webview:
+    :path: "../node_modules/react-native-webview"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-oscompat:
@@ -2810,7 +2834,6 @@ SPEC CHECKSUMS:
   ExpoCamera: 6a326deb45ba840749652e4c15198317aa78497e
   ExpoFileSystem: 858a44267a3e6e9057e0888ad7c7cfbf55d52063
   ExpoFont: cf9d90ec1d3b97c4f513211905724c8171f82961
-  ExpoGL: e671bbf4b276cce5512597a076af39e3f965bdc2
   ExpoGlassEffect: 8ce45eca31f12e949e23a4ee13e2bfb59e9b0785
   ExpoHaptics: 807476b0c39e9d82b7270349d6487928ce32df84
   ExpoHead: 95a6ee0be1142320bccf07961d6a1502ded5d6ac
@@ -2825,6 +2848,7 @@ SPEC CHECKSUMS:
   ExpoRoomplan: dc3e6c85338944b73722f26720f0e765ed3ffd34
   ExpoSharing: 032c01bb034319e2374badf082ae935be866d2e9
   ExpoSplashScreen: bc3cffefca2716e5f22350ca109badd7e50ec14d
+  ExpoUI: b75e5ed95b5966b273f1305346f4b5fd911360be
   ExpoVideo: 50f5b3f31c7b5fb5a8f61a0137e674096c54eb4f
   EXStructuredHeaders: c951e77f2d936f88637421e9588c976da5827368
   EXUpdates: 9b61bfe4fbc0188ed61e406ee13bfacecb9328cf
@@ -2872,6 +2896,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 42a1b4f8774b577d03b53de7326e3d5757fe9513
   react-native-slider: 8c562583722c396a3682f451f0b6e68e351ec3b9
   react-native-viewpager: ddaf7a06b1864faed597e6742306a8d24c3e0785
+  react-native-webview: 3e303e80cadb5f17118c8c1502aa398e9287e415
   React-NativeModulesApple: 8969913947d5b576de4ed371a939455a8daf28aa
   React-oscompat: ce47230ed20185e91de62d8c6d139ae61763d09c
   React-perflogger: 02b010e665772c7dcb859d85d44c1bfc5ac7c0e4
@@ -2915,6 +2940,6 @@ SPEC CHECKSUMS:
   Yoga: 5934998fbeaef7845dbf698f698518695ab4cd1a
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 7c8afda416fd72d1fb8961a4944e050911a5e749
+PODFILE CHECKSUM: 0d877666910a2f1d2dafd080d6f26aeddfdbd919
 
 COCOAPODS: 1.16.2

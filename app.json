@@ -1,11 +1,11 @@
 {
   "expo": {
     "newArchEnabled": true,
-    "name": "Bianco AI",
-    "slug": "bianco-ai",
+    "name": "scan3D",
+    "slug": "scan3d",
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
-    "scheme": "biancoai",
+    "scheme": "scan3d",
     "platforms": [
       "ios"
     ],
@@ -43,10 +43,10 @@
       ]
     ],
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/img/scan3D.png",
+    "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/img/scan3D.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -55,7 +55,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mmdev13.biancoai",
+      "bundleIdentifier": "com.mmdev13.scan3d",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "This app needs access to your photos to select room images for AI renovation.",

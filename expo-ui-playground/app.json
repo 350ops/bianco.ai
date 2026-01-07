@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.mmdev13.expouiplayground"
+  },
+  "ios": {
+    "bundleIdentifier": "com.mmdev13.expouiplayground"
+  }
+}

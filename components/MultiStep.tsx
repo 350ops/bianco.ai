@@ -1,10 +1,11 @@
 import React, { ReactNode, useState, useRef, useEffect, Children, isValidElement } from 'react';
 import { View, Pressable, ScrollView, Animated, Easing, Text } from 'react-native';
-import Header from '@/components/Header';
-import { Button } from '@/components/Button';
-import ThemedText from '@/components/ThemedText';
-import Icon from '@/components/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { Button } from '@/components/Button';
+import Header from '@/components/Header';
+import Icon from '@/components/Icon';
+import ThemedText from '@/components/ThemedText';
 
 // Step component that will be used as children
 export interface StepProps {
@@ -19,7 +20,10 @@ export const Step: React.FC<StepProps> = ({ children }) => {
 
 // Add this to help with type checking
 const isStepComponent = (child: any): child is React.ReactElement<StepProps> => {
-  return isValidElement(child) && (child.type === Step || (typeof child.type === 'function' && child.type.name === 'Step'));
+  return (
+    isValidElement(child) &&
+    (child.type === Step || (typeof child.type === 'function' && child.type.name === 'Step'))
+  );
 };
 
 interface StepData {
@@ -49,17 +53,20 @@ export default function MultiStep({
   onStepChange,
 }: MultiStepProps) {
   // Filter and validate children to only include Step components
-  const validChildren = Children.toArray(children)
-    .filter(isStepComponent);
-  
+  const validChildren = Children.toArray(children).filter(isStepComponent);
+
   // Extract step data from children
   const steps: StepData[] = validChildren.map((child, index) => {
-    const { title, optional, children: stepContent } = (child as React.ReactElement<StepProps>).props;
+    const {
+      title,
+      optional,
+      children: stepContent,
+    } = (child as React.ReactElement<StepProps>).props;
     return {
       key: `step-${index}`,
       title: title || `Step ${index + 1}`,
       optional,
-      component: stepContent
+      component: stepContent,
     };
   });
 
@@ -68,7 +75,11 @@ export default function MultiStep({
     steps.push({
       key: 'empty-step',
       title: 'Empty',
-      component: <View><ThemedText>No steps provided</ThemedText></View>
+      component: (
+        <View>
+          <ThemedText>No steps provided</ThemedText>
+        </View>
+      ),
     });
   }
 
@@ -86,7 +97,7 @@ export default function MultiStep({
     // Reset and start fade/slide animations
     fadeAnim.setValue(0);
     slideAnim.setValue(50);
-    
+
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -98,7 +109,7 @@ export default function MultiStep({
         duration: 200,
         useNativeDriver: true,
         easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
-      })
+      }),
     ]).start();
 
     // Animate progress indicators
@@ -117,7 +128,7 @@ export default function MultiStep({
     } else {
       const nextStep = currentStepIndex + 1;
       const canProceed = onStepChange ? onStepChange(nextStep) : true;
-      
+
       if (canProceed) {
         setCurrentStepIndex(nextStep);
       }
@@ -145,7 +156,7 @@ export default function MultiStep({
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={{paddingBottom: insets.bottom}} className={`flex-1 bg-background ${className}`}>
+    <View style={{ paddingBottom: insets.bottom }} className={`flex-1 bg-background ${className}`}>
       {showHeader && (
         <Header
           rightComponents={[
@@ -153,26 +164,15 @@ export default function MultiStep({
               <Pressable
                 key="close"
                 onPress={handleClose}
-                className="p-2 rounded-full active:bg-secondary"
-                hitSlop={8}
-              >
-                <Icon
-                  name="X"
-                  size={24}
-                  
-                />
+                className="rounded-full p-2 active:bg-secondary"
+                hitSlop={8}>
+                <Icon name="X" size={24} />
               </Pressable>
-            ) : undefined
+            ) : undefined,
           ]}
           leftComponent={[
             currentStep.optional && !isLastStep && (
-              <Button
-                key="skip"
-                title="Skip"
-                variant="ghost"
-                onPress={handleSkip}
-                size="small"
-              />
+              <Button key="skip" title="Skip" variant="ghost" onPress={handleSkip} size="small" />
             ),
             !isFirstStep && (
               <Icon
@@ -189,15 +189,14 @@ export default function MultiStep({
 
       {/* Step Indicators */}
       {showStepIndicator && (
-        <View className="px-global mb-10 flex-row justify-center w-full">
+        <View className="mb-10 w-full flex-row justify-center px-global">
           {steps.map((_, index) => (
             <Animated.View
               key={index}
-              className="h-1 overflow-hidden bg-border flex-1"
+              className="h-1 flex-1 overflow-hidden bg-border"
               style={{
                 opacity: index === currentStepIndex ? 1 : 1,
-              }}
-            >
+              }}>
               <Animated.View
                 className="h-full bg-highlight"
                 style={{
@@ -218,20 +217,20 @@ export default function MultiStep({
         style={{
           opacity: fadeAnim,
           transform: [{ translateY: slideAnim }],
-        }}
-      >
-        <View className='flex-1'>
-          {currentStep.component}
-        </View>
+        }}>
+        <View className="flex-1">{currentStep.component}</View>
       </Animated.View>
 
       {/* Bottom Navigation */}
       <View className="px-4 py-3">
-       
-        <Pressable onPress={handleNext} className='w-full bg-highlight flex items-center justify-center py-5 rounded-full'>
-          <Text className="text-black font-semibold text-base">{isLastStep ? "Complete" : "Next"}</Text>
+        <Pressable
+          onPress={handleNext}
+          className="flex w-full items-center justify-center rounded-full bg-highlight py-5">
+          <Text className="text-base font-semibold text-black">
+            {isLastStep ? 'Complete' : 'Next'}
+          </Text>
         </Pressable>
       </View>
     </View>
   );
-} 
+}

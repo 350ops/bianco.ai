@@ -1,37 +1,30 @@
-import React, { useEffect, useState, useRef } from "react";
-import {
-  View,
-  Pressable,
-  StyleSheet,
-  Platform,
-  Alert,
-  Animated,
-} from "react-native";
-import { router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { RoomPlanView, useRoomPlanView, ExportType } from "expo-roomplan";
-import type { ScanStatus } from "expo-roomplan";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { RoomPlanView, useRoomPlanView, ExportType } from 'expo-roomplan';
+import type { ScanStatus } from 'expo-roomplan';
+import { router } from 'expo-router';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Pressable, StyleSheet, Platform, Alert, Animated } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import Header from "@/components/Header";
-import { ThemedText } from "@/components/ThemedText";
-import ThemeScroller from "@/components/ThemeScroller";
-import AnimatedView from "@/components/AnimatedView";
-import useThemeColors from "@/app/contexts/ThemeColors";
-import Icon from "@/components/Icon";
+import useThemeColors from '@/app/contexts/ThemeColors';
+import AnimatedView from '@/components/AnimatedView';
+import Header from '@/components/Header';
+import Icon from '@/components/Icon';
+import ThemeScroller from '@/components/ThemeScroller';
+import { ThemedText } from '@/components/ThemedText';
 
 // Safely check if liquid glass is available (iOS 26+)
 let supportsNativeLiquidGlass = false;
 let GlassView: any = View;
 try {
-    const glassEffect = require('expo-glass-effect');
-    if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
-        supportsNativeLiquidGlass = true;
-        GlassView = glassEffect.GlassView;
-    }
+  const glassEffect = require('expo-glass-effect');
+  if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
+    supportsNativeLiquidGlass = true;
+    GlassView = glassEffect.GlassView;
+  }
 } catch (e) {
-    // expo-glass-effect not available
+  // expo-glass-effect not available
 }
 
 // Primary blue from palette
@@ -39,8 +32,9 @@ const PRIMARY_BLUE = '#4DA3E1';
 const PRIMARY_BLUE_DARK = '#5DB5F0';
 // Status colors from palette
 const SUCCESS_GREEN = '#A9CC9C';
-const WARNING_YELLOW = '#FFE5A0';  // Pastel yellow
+const WARNING_YELLOW = '#FFE5A0'; // Pastel yellow
 const ERROR_RED = '#F04848';
+const GLASS_DARK_TINT = 'rgba(0,0,0,0.35)';
 
 export default function ARRoomScanScreen() {
   const colors = useThemeColors();
@@ -55,33 +49,29 @@ export default function ARRoomScanScreen() {
   const transitionAnim = useRef(new Animated.Value(0)).current;
 
   // Check if the device supports RoomPlan (iOS only, requires LiDAR)
-  const isSupported = Platform.OS === "ios";
+  const isSupported = Platform.OS === 'ios';
 
-  const handleStatus = (e: {
-    nativeEvent: { status: ScanStatus; errorMessage?: string };
-  }) => {
+  const handleStatus = (e: { nativeEvent: { status: ScanStatus; errorMessage?: string } }) => {
     const { status, errorMessage } = e.nativeEvent;
-    console.log("[AR Room Scan] status:", status, errorMessage ? `- ${errorMessage}` : "");
-    
-    if (status === "OK") {
+    console.log('[AR Room Scan] status:', status, errorMessage ? `- ${errorMessage}` : '');
+
+    if (status === 'OK') {
       setScanComplete(true);
-    } else if (status === "Error") {
-      Alert.alert("Scan Error", errorMessage || "An error occurred during scanning");
-    } else if (status === "Canceled") {
+    } else if (status === 'Error') {
+      Alert.alert('Scan Error', errorMessage || 'An error occurred during scanning');
+    } else if (status === 'Canceled') {
       setShowScanner(false);
     }
   };
 
-  const handleExported = (e: {
-    nativeEvent: { scanUrl?: string; jsonUrl?: string };
-  }) => {
-    console.log("[AR Room Scan] exported:", e.nativeEvent);
+  const handleExported = (e: { nativeEvent: { scanUrl?: string; jsonUrl?: string } }) => {
+    console.log('[AR Room Scan] exported:', e.nativeEvent);
     setExportedData(e.nativeEvent);
-    
+
     // Show transition animation instead of immediately closing
     setShowTransition(true);
     transitionAnim.setValue(0);
-    
+
     // Animate the 3D model scaling up
     Animated.spring(transitionAnim, {
       toValue: 1,
@@ -94,7 +84,7 @@ export default function ARRoomScanScreen() {
   const handleContinueFromTransition = () => {
     setShowTransition(false);
     setShowScanner(false);
-    
+
     // Navigate to scan results screen with the exported data
     if (exportedData) {
       router.push({
@@ -108,11 +98,11 @@ export default function ARRoomScanScreen() {
   };
 
   const handlePreview = () => {
-    console.log("[AR Room Scan] preview presented");
+    console.log('[AR Room Scan] preview presented');
   };
 
   const { viewProps, controls, state } = useRoomPlanView({
-    scanName: "RenovationRoom",
+    scanName: 'RenovationRoom',
     exportType: ExportType.Parametric,
     exportOnFinish: true,
     sendFileLoc: true,
@@ -131,9 +121,9 @@ export default function ARRoomScanScreen() {
   const startScan = () => {
     if (!isSupported) {
       Alert.alert(
-        "Not Supported",
-        "AR Room Scanning requires an iOS device with LiDAR sensor (iPhone 12 Pro or newer, iPad Pro).",
-        [{ text: "OK" }]
+        'Not Supported',
+        'AR Room Scanning requires an iOS device with LiDAR sensor (iPhone 12 Pro or newer, iPad Pro).',
+        [{ text: 'OK' }]
       );
       return;
     }
@@ -159,10 +149,7 @@ export default function ARRoomScanScreen() {
     if (supportsNativeLiquidGlass) {
       return (
         <View style={[glassStyles.cardOuter, style]}>
-          <GlassView
-            style={glassStyles.cardGlass}
-            glassEffectStyle="regular"
-          >
+          <GlassView style={glassStyles.cardGlass} glassEffectStyle="regular">
             {children}
           </GlassView>
         </View>
@@ -173,13 +160,13 @@ export default function ARRoomScanScreen() {
       <View style={[glassStyles.cardOuter, style]}>
         <BlurView
           intensity={40}
-          tint={colors.isDark ? "dark" : "light"}
-          style={glassStyles.cardBlur}
-        >
+          tint={colors.isDark ? 'dark' : 'light'}
+          style={glassStyles.cardBlur}>
           <LinearGradient
-            colors={colors.isDark 
-              ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.03)'] as [string, string]
-              : ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)'] as [string, string]
+            colors={
+              colors.isDark
+                ? (['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.03)'] as [string, string])
+                : (['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)'] as [string, string])
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
@@ -192,15 +179,15 @@ export default function ARRoomScanScreen() {
   };
 
   // Liquid Glass Button Component
-  const LiquidGlassButton = ({ 
-    onPress, 
-    title, 
+  const LiquidGlassButton = ({
+    onPress,
+    title,
     icon,
     disabled = false,
-    variant = 'primary'
-  }: { 
-    onPress: () => void; 
-    title: string; 
+    variant = 'primary',
+  }: {
+    onPress: () => void;
+    title: string;
     icon?: string;
     disabled?: boolean;
     variant?: 'primary' | 'secondary';
@@ -210,32 +197,21 @@ export default function ARRoomScanScreen() {
 
     if (supportsNativeLiquidGlass) {
       return (
-        <Pressable 
-          onPress={onPress} 
+        <Pressable
+          onPress={onPress}
           disabled={disabled}
-          style={[glassStyles.buttonOuter, disabled && { opacity: 0.5 }]}
-        >
+          style={[glassStyles.buttonOuter, disabled && { opacity: 0.5 }]}>
           <GlassView
-            style={[
-              glassStyles.buttonGlass,
-              isPrimary && { backgroundColor: blueColor }
-            ]}
+            style={[glassStyles.buttonGlass, isPrimary && { backgroundColor: blueColor }]}
             glassEffectStyle="regular"
             tintColor={isPrimary ? blueColor : undefined}
-            isInteractive
-          >
+            isInteractive>
             <View style={glassStyles.buttonContent}>
               {icon && (
-                <Icon 
-                  name={icon as any} 
-                  size={22} 
-                  color={isPrimary ? '#FFFFFF' : colors.text} 
-                />
+                <Icon name={icon as any} size={22} color={isPrimary ? '#FFFFFF' : colors.text} />
               )}
-              <ThemedText style={[
-                glassStyles.buttonText, 
-                { color: isPrimary ? '#FFFFFF' : colors.text }
-              ]}>
+              <ThemedText
+                style={[glassStyles.buttonText, { color: isPrimary ? '#FFFFFF' : colors.text }]}>
                 {title}
               </ThemedText>
             </View>
@@ -245,24 +221,23 @@ export default function ARRoomScanScreen() {
     }
 
     return (
-      <Pressable 
-        onPress={onPress} 
+      <Pressable
+        onPress={onPress}
         disabled={disabled}
-        style={[glassStyles.buttonOuter, disabled && { opacity: 0.5 }]}
-      >
+        style={[glassStyles.buttonOuter, disabled && { opacity: 0.5 }]}>
         <BlurView
           intensity={60}
-          tint={colors.isDark ? "dark" : "light"}
-          style={glassStyles.buttonBlur}
-        >
+          tint={colors.isDark ? 'dark' : 'light'}
+          style={glassStyles.buttonBlur}>
           <LinearGradient
-            colors={isPrimary 
-              ? (colors.isDark 
-                  ? ['rgba(10, 132, 255, 0.95)', 'rgba(0, 122, 255, 0.9)'] as [string, string]
-                  : ['rgba(0, 122, 255, 0.98)', 'rgba(0, 100, 220, 0.95)'] as [string, string])
-              : (colors.isDark
-                  ? ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)'] as [string, string]
-                  : ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)'] as [string, string])
+            colors={
+              isPrimary
+                ? colors.isDark
+                  ? (['rgba(10, 132, 255, 0.95)', 'rgba(0, 122, 255, 0.9)'] as [string, string])
+                  : (['rgba(0, 122, 255, 0.98)', 'rgba(0, 100, 220, 0.95)'] as [string, string])
+                : colors.isDark
+                  ? (['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)'] as [string, string])
+                  : (['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)'] as [string, string])
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -270,16 +245,10 @@ export default function ARRoomScanScreen() {
           />
           <View style={glassStyles.buttonContent}>
             {icon && (
-              <Icon 
-                name={icon as any} 
-                size={22} 
-                color={isPrimary ? '#FFFFFF' : colors.text} 
-              />
+              <Icon name={icon as any} size={22} color={isPrimary ? '#FFFFFF' : colors.text} />
             )}
-            <ThemedText style={[
-              glassStyles.buttonText, 
-              { color: isPrimary ? '#FFFFFF' : colors.text }
-            ]}>
+            <ThemedText
+              style={[glassStyles.buttonText, { color: isPrimary ? '#FFFFFF' : colors.text }]}>
               {title}
             </ThemedText>
           </View>
@@ -293,20 +262,22 @@ export default function ARRoomScanScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <Header title="AR Room Scan" showBackButton />
-        
+
         <ThemeScroller contentContainerStyle={{ padding: 16 }}>
           <AnimatedView animation="fadeInUp" delay={0}>
             {/* Hero Section - Liquid Glass */}
             <LiquidGlassCard style={{ marginBottom: 20 }}>
               <View style={glassStyles.heroContent}>
-                <View style={[glassStyles.heroIconContainer, { backgroundColor: colors.accentLight }]}>
+                <View
+                  style={[glassStyles.heroIconContainer, { backgroundColor: colors.accentLight }]}>
                   <Icon name="Box" size={40} color={colors.iconAccent} />
                 </View>
                 <ThemedText style={[glassStyles.heroTitle, { color: colors.text }]}>
                   Scan Your Room in 3D
                 </ThemedText>
                 <ThemedText style={[glassStyles.heroDescription, { color: colors.placeholder }]}>
-                  Use your device's LiDAR sensor to create an accurate 3D model of your room for better renovation planning.
+                  Use your device's LiDAR sensor to create an accurate 3D model of your room for
+                  better renovation planning.
                 </ThemedText>
               </View>
             </LiquidGlassCard>
@@ -321,7 +292,7 @@ export default function ARRoomScanScreen() {
               disabled={!isSupported}
               variant="primary"
             />
-            
+
             {!isSupported && (
               <ThemedText style={[glassStyles.supportText, { color: colors.placeholder }]}>
                 AR Room Scanning is only available on iOS devices with LiDAR
@@ -334,33 +305,55 @@ export default function ARRoomScanScreen() {
             <LiquidGlassCard style={{ marginTop: 20 }}>
               <View style={glassStyles.cardContent}>
                 <ThemedText style={[glassStyles.sectionTitle, { color: colors.text }]}>
-                Requirements
-              </ThemedText>
-              
+                  Requirements
+                </ThemedText>
+
                 <View style={glassStyles.requirementsList}>
                   <View style={glassStyles.requirementRow}>
-                    <View style={[glassStyles.requirementIcon, { backgroundColor: isSupported ? 'rgba(169, 204, 156, 0.25)' : 'rgba(240, 72, 72, 0.2)' }]}>
-                    <Icon
-                        name={isSupported ? "Check" : "X"}
-                      size={16}
+                    <View
+                      style={[
+                        glassStyles.requirementIcon,
+                        {
+                          backgroundColor: isSupported
+                            ? 'rgba(169, 204, 156, 0.25)'
+                            : 'rgba(240, 72, 72, 0.2)',
+                        },
+                      ]}>
+                      <Icon
+                        name={isSupported ? 'Check' : 'X'}
+                        size={16}
                         color={isSupported ? SUCCESS_GREEN : ERROR_RED}
-                    />
+                      />
                     </View>
-                    <ThemedText style={{ color: colors.text, flex: 1 }}>iOS Device (iPhone/iPad)</ThemedText>
+                    <ThemedText style={{ color: colors.text, flex: 1 }}>
+                      iOS Device (iPhone/iPad)
+                    </ThemedText>
                   </View>
-                  
+
                   <View style={glassStyles.requirementRow}>
-                    <View style={[glassStyles.requirementIcon, { backgroundColor: 'rgba(255, 229, 160, 0.35)' }]}>
+                    <View
+                      style={[
+                        glassStyles.requirementIcon,
+                        { backgroundColor: 'rgba(255, 229, 160, 0.35)' },
+                      ]}>
                       <Icon name="Radar" size={16} color={WARNING_YELLOW} />
-                </View>
-                    <ThemedText style={{ color: colors.text, flex: 1 }}>LiDAR sensor (iPhone 12 Pro+, iPad Pro)</ThemedText>
+                    </View>
+                    <ThemedText style={{ color: colors.text, flex: 1 }}>
+                      LiDAR sensor (iPhone 12 Pro+, iPad Pro)
+                    </ThemedText>
                   </View>
-                  
+
                   <View style={glassStyles.requirementRow}>
-                    <View style={[glassStyles.requirementIcon, { backgroundColor: colors.accentLight }]}>
+                    <View
+                      style={[
+                        glassStyles.requirementIcon,
+                        { backgroundColor: colors.accentLight },
+                      ]}>
                       <Icon name="Sun" size={16} color={colors.iconAccent} />
-                </View>
-                    <ThemedText style={{ color: colors.text, flex: 1 }}>Well-lit room for best results</ThemedText>
+                    </View>
+                    <ThemedText style={{ color: colors.text, flex: 1 }}>
+                      Well-lit room for best results
+                    </ThemedText>
                   </View>
                 </View>
               </View>
@@ -372,47 +365,68 @@ export default function ARRoomScanScreen() {
             <LiquidGlassCard style={{ marginTop: 20, marginBottom: 40 }}>
               <View style={glassStyles.cardContent}>
                 <ThemedText style={[glassStyles.sectionTitle, { color: colors.text }]}>
-                How It Works
-              </ThemedText>
-              
+                  How It Works
+                </ThemedText>
+
                 <View style={glassStyles.stepsList}>
                   <View style={glassStyles.stepRow}>
-                    <View style={[glassStyles.stepNumber, { backgroundColor: colors.isDark ? PRIMARY_BLUE_DARK : PRIMARY_BLUE }]}>
+                    <View
+                      style={[
+                        glassStyles.stepNumber,
+                        { backgroundColor: colors.isDark ? PRIMARY_BLUE_DARK : PRIMARY_BLUE },
+                      ]}>
                       <ThemedText style={glassStyles.stepNumberText}>1</ThemedText>
-                  </View>
+                    </View>
                     <View style={glassStyles.stepContent}>
-                      <ThemedText style={[glassStyles.stepTitle, { color: colors.text }]}>Start Scanning</ThemedText>
-                      <ThemedText style={[glassStyles.stepDescription, { color: colors.placeholder }]}>
-                      Point your device at the room and slowly move around
-                    </ThemedText>
+                      <ThemedText style={[glassStyles.stepTitle, { color: colors.text }]}>
+                        Start Scanning
+                      </ThemedText>
+                      <ThemedText
+                        style={[glassStyles.stepDescription, { color: colors.placeholder }]}>
+                        Point your device at the room and slowly move around
+                      </ThemedText>
+                    </View>
                   </View>
-                </View>
-                
+
                   <View style={glassStyles.stepRow}>
-                    <View style={[glassStyles.stepNumber, { backgroundColor: colors.isDark ? PRIMARY_BLUE_DARK : PRIMARY_BLUE }]}>
+                    <View
+                      style={[
+                        glassStyles.stepNumber,
+                        { backgroundColor: colors.isDark ? PRIMARY_BLUE_DARK : PRIMARY_BLUE },
+                      ]}>
                       <ThemedText style={glassStyles.stepNumberText}>2</ThemedText>
-                  </View>
+                    </View>
                     <View style={glassStyles.stepContent}>
-                      <ThemedText style={[glassStyles.stepTitle, { color: colors.text }]}>Capture Details</ThemedText>
-                      <ThemedText style={[glassStyles.stepDescription, { color: colors.placeholder }]}>
-                      The scanner automatically detects walls, doors, and windows
-                    </ThemedText>
+                      <ThemedText style={[glassStyles.stepTitle, { color: colors.text }]}>
+                        Capture Details
+                      </ThemedText>
+                      <ThemedText
+                        style={[glassStyles.stepDescription, { color: colors.placeholder }]}>
+                        The scanner automatically detects walls, doors, and windows
+                      </ThemedText>
+                    </View>
                   </View>
-                </View>
-                
+
                   <View style={glassStyles.stepRow}>
-                    <View style={[glassStyles.stepNumber, { backgroundColor: colors.isDark ? PRIMARY_BLUE_DARK : PRIMARY_BLUE }]}>
+                    <View
+                      style={[
+                        glassStyles.stepNumber,
+                        { backgroundColor: colors.isDark ? PRIMARY_BLUE_DARK : PRIMARY_BLUE },
+                      ]}>
                       <ThemedText style={glassStyles.stepNumberText}>3</ThemedText>
-                  </View>
+                    </View>
                     <View style={glassStyles.stepContent}>
-                      <ThemedText style={[glassStyles.stepTitle, { color: colors.text }]}>Export & Use</ThemedText>
-                      <ThemedText style={[glassStyles.stepDescription, { color: colors.placeholder }]}>
-                      Get a 3D model to use for renovation planning
-                    </ThemedText>
+                      <ThemedText style={[glassStyles.stepTitle, { color: colors.text }]}>
+                        Export & Use
+                      </ThemedText>
+                      <ThemedText
+                        style={[glassStyles.stepDescription, { color: colors.placeholder }]}>
+                        Get a 3D model to use for renovation planning
+                      </ThemedText>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
             </LiquidGlassCard>
           </AnimatedView>
         </ThemeScroller>
@@ -422,24 +436,30 @@ export default function ARRoomScanScreen() {
 
   // Full-screen scanner overlay
   return (
-    <View style={[styles.scannerContainer, { backgroundColor: "#000" }]}>
+    <View style={[styles.scannerContainer, { backgroundColor: '#000' }]}>
       {/* RoomPlan View */}
       <RoomPlanView style={StyleSheet.absoluteFill} {...viewProps} />
 
       {/* Top Controls - Liquid Glass */}
       {!showTransition && (
-      <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
+        <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
           {supportsNativeLiquidGlass ? (
             <>
               <Pressable onPress={onCancel}>
-                <GlassView style={styles.glassControlButton} glassEffectStyle="regular">
+                <GlassView
+                  style={styles.glassControlButton}
+                  glassEffectStyle="regular"
+                  tintColor={GLASS_DARK_TINT}>
                   <Icon name="X" size={18} color="#fff" />
                   <ThemedText style={styles.controlButtonText}>Cancel</ThemedText>
                 </GlassView>
               </Pressable>
 
               <Pressable onPress={onFinish}>
-                <GlassView style={styles.glassControlButton} glassEffectStyle="regular">
+                <GlassView
+                  style={styles.glassControlButton}
+                  glassEffectStyle="regular"
+                  tintColor={GLASS_DARK_TINT}>
                   <Icon name="Check" size={18} color="#fff" />
                   <ThemedText style={styles.controlButtonText}>Finish</ThemedText>
                 </GlassView>
@@ -450,27 +470,30 @@ export default function ARRoomScanScreen() {
               <Pressable onPress={onCancel}>
                 <BlurView intensity={60} tint="dark" style={styles.controlButton}>
                   <Icon name="X" size={18} color="#fff" />
-          <ThemedText style={styles.controlButtonText}>Cancel</ThemedText>
+                  <ThemedText style={styles.controlButtonText}>Cancel</ThemedText>
                 </BlurView>
-        </Pressable>
+              </Pressable>
 
               <Pressable onPress={onFinish}>
                 <BlurView intensity={60} tint="dark" style={styles.controlButton}>
                   <Icon name="Check" size={18} color="#fff" />
-          <ThemedText style={styles.controlButtonText}>Finish</ThemedText>
+                  <ThemedText style={styles.controlButtonText}>Finish</ThemedText>
                 </BlurView>
-        </Pressable>
+              </Pressable>
             </>
           )}
-      </View>
+        </View>
       )}
 
       {/* Bottom Controls - Liquid Glass */}
       {!showTransition && (
-      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
           {supportsNativeLiquidGlass ? (
             <Pressable onPress={onAddRoom}>
-              <GlassView style={styles.glassAddRoomButton} glassEffectStyle="regular">
+              <GlassView
+                style={styles.glassAddRoomButton}
+                glassEffectStyle="regular"
+                tintColor={GLASS_DARK_TINT}>
                 <Icon name="PlusSquare" size={20} color="#fff" />
                 <ThemedText style={styles.addRoomButtonText}>Add Another Room</ThemedText>
               </GlassView>
@@ -479,23 +502,26 @@ export default function ARRoomScanScreen() {
             <Pressable onPress={onAddRoom}>
               <BlurView intensity={60} tint="dark" style={styles.addRoomButton}>
                 <Icon name="PlusSquare" size={20} color="#fff" />
-          <ThemedText style={styles.addRoomButtonText}>Add Another Room</ThemedText>
+                <ThemedText style={styles.addRoomButtonText}>Add Another Room</ThemedText>
               </BlurView>
-        </Pressable>
+            </Pressable>
           )}
 
-        {/* Scanning hint */}
+          {/* Scanning hint */}
           {supportsNativeLiquidGlass ? (
-            <GlassView style={styles.glassHintContainer} glassEffectStyle="regular">
+            <GlassView
+              style={styles.glassHintContainer}
+              glassEffectStyle="regular"
+              tintColor={GLASS_DARK_TINT}>
               <ThemedText style={styles.hintText}>
                 Move slowly around the room to capture all surfaces
               </ThemedText>
             </GlassView>
           ) : (
             <BlurView intensity={40} tint="dark" style={styles.hintContainer}>
-          <ThemedText style={styles.hintText}>
-            Move slowly around the room to capture all surfaces
-          </ThemedText>
+              <ThemedText style={styles.hintText}>
+                Move slowly around the room to capture all surfaces
+              </ThemedText>
             </BlurView>
           )}
         </View>
@@ -517,9 +543,9 @@ export default function ARRoomScanScreen() {
                   },
                 ],
                 opacity: transitionAnim,
-              }}
-            >
-              <View style={[styles.transitionIconContainer, { backgroundColor: colors.accentLight }]}>
+              }}>
+              <View
+                style={[styles.transitionIconContainer, { backgroundColor: colors.accentLight }]}>
                 <Icon name="Box" size={80} color={colors.iconAccent} />
               </View>
             </Animated.View>
@@ -536,14 +562,9 @@ export default function ARRoomScanScreen() {
                     }),
                   },
                 ],
-              }}
-            >
-              <ThemedText style={styles.transitionTitle}>
-                Scan Complete!
-              </ThemedText>
-              <ThemedText style={styles.transitionSubtitle}>
-                Your 3D room model is ready
-              </ThemedText>
+              }}>
+              <ThemedText style={styles.transitionTitle}>Scan Complete!</ThemedText>
+              <ThemedText style={styles.transitionSubtitle}>Your 3D room model is ready</ThemedText>
             </Animated.View>
 
             {/* Continue Button - Liquid Glass Blue */}
@@ -553,19 +574,15 @@ export default function ARRoomScanScreen() {
                 width: '100%',
                 paddingHorizontal: 32,
                 marginTop: 40,
-              }}
-            >
+              }}>
               {supportsNativeLiquidGlass ? (
                 <Pressable onPress={handleContinueFromTransition}>
-                  <GlassView 
-                    style={[styles.glassContinueButton, { backgroundColor: PRIMARY_BLUE }]} 
+                  <GlassView
+                    style={[styles.glassContinueButton, { backgroundColor: PRIMARY_BLUE }]}
                     glassEffectStyle="regular"
                     tintColor={PRIMARY_BLUE}
-                    isInteractive
-                  >
-                    <ThemedText style={styles.continueButtonText}>
-                      Continue
-                    </ThemedText>
+                    isInteractive>
+                    <ThemedText style={styles.continueButtonText}>Continue</ThemedText>
                     <Icon name="ArrowRight" size={20} color="#fff" />
                   </GlassView>
                 </Pressable>
@@ -573,21 +590,21 @@ export default function ARRoomScanScreen() {
                 <Pressable onPress={handleContinueFromTransition}>
                   <BlurView intensity={80} tint="light" style={styles.continueButton}>
                     <LinearGradient
-                      colors={['rgba(0, 122, 255, 0.98)', 'rgba(0, 100, 220, 0.95)'] as [string, string]}
+                      colors={
+                        ['rgba(0, 122, 255, 0.98)', 'rgba(0, 100, 220, 0.95)'] as [string, string]
+                      }
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={StyleSheet.absoluteFill}
                     />
-                    <ThemedText style={styles.continueButtonText}>
-                      Continue
-                    </ThemedText>
+                    <ThemedText style={styles.continueButtonText}>Continue</ThemedText>
                     <Icon name="ArrowRight" size={20} color="#fff" />
                   </BlurView>
                 </Pressable>
               )}
             </Animated.View>
+          </View>
         </View>
-      </View>
       )}
     </View>
   );
@@ -728,18 +745,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topBar: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 16,
     right: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     zIndex: 10,
   },
   controlButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -747,29 +764,32 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   glassControlButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 12,
+    backgroundColor: GLASS_DARK_TINT,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   controlButtonText: {
-    color: "#fff",
-    fontWeight: "600",
+    color: '#fff',
+    fontWeight: '600',
     fontSize: 15,
   },
   bottomBar: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 16,
     right: 16,
     zIndex: 10,
   },
   addRoomButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
     borderRadius: 14,
@@ -777,76 +797,82 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   glassAddRoomButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
     borderRadius: 14,
     marginBottom: 12,
+    backgroundColor: GLASS_DARK_TINT,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   addRoomButtonText: {
-    color: "#fff",
-    fontWeight: "700",
+    color: '#fff',
+    fontWeight: '700',
     fontSize: 16,
   },
   hintContainer: {
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 10,
-    alignItems: "center",
+    alignItems: 'center',
     overflow: 'hidden',
   },
   glassHintContainer: {
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 10,
-    alignItems: "center",
+    alignItems: 'center',
+    backgroundColor: GLASS_DARK_TINT,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   hintText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 13,
-    textAlign: "center",
+    textAlign: 'center',
     opacity: 0.9,
   },
   transitionOverlay: {
-    backgroundColor: "rgba(0, 0, 0, 0.95)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 100,
   },
   transitionContent: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 24,
   },
   transitionIconContainer: {
     width: 160,
     height: 160,
     borderRadius: 80,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 32,
   },
   transitionTitle: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 28,
-    fontWeight: "700",
-    textAlign: "center",
+    fontWeight: '700',
+    textAlign: 'center',
     marginBottom: 8,
   },
   transitionSubtitle: {
-    color: "rgba(255,255,255,0.7)",
+    color: 'rgba(255,255,255,0.7)',
     fontSize: 16,
-    textAlign: "center",
+    textAlign: 'center',
   },
   continueButton: {
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     overflow: 'hidden',
   },
@@ -854,14 +880,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
   },
   continueButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 });

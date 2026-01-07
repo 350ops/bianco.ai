@@ -1,6 +1,6 @@
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Animated, Dimensions } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 
 interface ProgressBarProps {
   percentage: number;
@@ -23,17 +23,17 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   className = '',
   rounded = true,
   duration = 1000,
-  delay = 0
+  delay = 0,
 }) => {
   const animatedWidth = useRef(new Animated.Value(0)).current;
-  
+
   // Ensure percentage is between 0 and 100
   const clampedPercentage = Math.max(0, Math.min(100, percentage));
-  
+
   const startAnimation = useCallback(() => {
     // Reset animation value to 0
     animatedWidth.setValue(0);
-    
+
     // Start animation with delay
     setTimeout(() => {
       Animated.timing(animatedWidth, {
@@ -50,19 +50,18 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       startAnimation();
     }, [startAnimation])
   );
-  
+
   return (
-    <View 
-      className={`flex-1 w-full ${backgroundColor} ${rounded ? 'rounded-full' : ''} ${className}`}
-      style={{ height }}
-    >
-      <Animated.View 
+    <View
+      className={`w-full flex-1 ${backgroundColor} ${rounded ? 'rounded-full' : ''} ${className}`}
+      style={{ height }}>
+      <Animated.View
         className={`${fillColor} ${rounded ? 'rounded-full' : ''} h-full`}
-        style={{ 
+        style={{
           width: animatedWidth.interpolate({
             inputRange: [0, 100],
             outputRange: ['0%', '100%'],
-          })
+          }),
         }}
       />
     </View>

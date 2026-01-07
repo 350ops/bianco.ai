@@ -1,4 +1,4 @@
--- NovaHogar Project Estimates Schema
+-- scan3D Project Estimates Schema
 -- Run this in your Supabase SQL Editor to create the required tables
 
 -- ============================================

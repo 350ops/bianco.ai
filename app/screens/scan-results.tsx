@@ -1,43 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { View, Pressable, Alert, ScrollView, StyleSheet, Platform } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { File } from "expo-file-system/next";
-import * as Sharing from "expo-sharing";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from 'expo-blur';
+import { File } from 'expo-file-system/next';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, useLocalSearchParams } from 'expo-router';
+import * as Sharing from 'expo-sharing';
+import React, { useEffect, useState } from 'react';
+import { View, Pressable, Alert, ScrollView, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import Header from "@/components/Header";
-import { ThemedText } from "@/components/ThemedText";
-import AnimatedView from "@/components/AnimatedView";
-import useThemeColors from "@/app/contexts/ThemeColors";
-import Icon from "@/components/Icon";
+import useThemeColors from '@/app/contexts/ThemeColors';
+import AnimatedView from '@/components/AnimatedView';
+import Header from '@/components/Header';
+import Icon from '@/components/Icon';
+import { ThemedText } from '@/components/ThemedText';
 
 // Safely check if liquid glass is available (iOS 26+)
 let supportsNativeLiquidGlass = false;
 let GlassView: any = View;
 try {
-    const glassEffect = require('expo-glass-effect');
-    if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
-        supportsNativeLiquidGlass = true;
-        GlassView = glassEffect.GlassView;
-    }
+  const glassEffect = require('expo-glass-effect');
+  if (Platform.OS === 'ios' && glassEffect.isLiquidGlassAvailable?.()) {
+    supportsNativeLiquidGlass = true;
+    GlassView = glassEffect.GlassView;
+  }
 } catch (e) {
-    // expo-glass-effect not available
+  // expo-glass-effect not available
 }
 
 // Primary blue from palette
 const PRIMARY_BLUE = '#4DA3E1';
 const PRIMARY_BLUE_DARK = '#5DB5F0';
 
-// Try to import file viewer
-let openFile: ((path: string, options?: any) => Promise<void>) | null = null;
-try {
-  const FileViewerTurbo = require("react-native-file-viewer-turbo");
-  openFile = FileViewerTurbo.open;
-} catch (e) {
-  console.log("[Scan Results] react-native-file-viewer-turbo not available");
-}
+// Note: Using expo-sharing for 3D model viewing instead of react-native-file-viewer-turbo
+// which had package export issues with Expo SDK 54
 
 // Types
 type Vector3Array = [number, number, number];
@@ -71,7 +65,7 @@ export default function ScanResultsScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ scanUrl?: string; jsonUrl?: string }>();
-  
+
   const [roomData, setRoomData] = useState<RoomPlanData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -80,10 +74,7 @@ export default function ScanResultsScreen() {
     if (supportsNativeLiquidGlass) {
       return (
         <View style={[glassStyles.cardOuter, style]}>
-          <GlassView
-            style={glassStyles.cardGlass}
-            glassEffectStyle="regular"
-          >
+          <GlassView style={glassStyles.cardGlass} glassEffectStyle="regular">
             {children}
           </GlassView>
         </View>
@@ -94,13 +85,13 @@ export default function ScanResultsScreen() {
       <View style={[glassStyles.cardOuter, style]}>
         <BlurView
           intensity={40}
-          tint={colors.isDark ? "dark" : "light"}
-          style={glassStyles.cardBlur}
-        >
+          tint={colors.isDark ? 'dark' : 'light'}
+          style={glassStyles.cardBlur}>
           <LinearGradient
-            colors={colors.isDark 
-              ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.03)'] as [string, string]
-              : ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)'] as [string, string]
+            colors={
+              colors.isDark
+                ? (['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.03)'] as [string, string])
+                : (['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)'] as [string, string])
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
@@ -113,15 +104,15 @@ export default function ScanResultsScreen() {
   };
 
   // Liquid Glass Button Component
-  const LiquidGlassButton = ({ 
-    onPress, 
-    title, 
+  const LiquidGlassButton = ({
+    onPress,
+    title,
     icon,
     variant = 'primary',
-    flex = false
-  }: { 
-    onPress: () => void; 
-    title: string; 
+    flex = false,
+  }: {
+    onPress: () => void;
+    title: string;
     icon?: string;
     variant?: 'primary' | 'secondary' | 'outline';
     flex?: boolean;
@@ -132,33 +123,30 @@ export default function ScanResultsScreen() {
 
     if (supportsNativeLiquidGlass) {
       return (
-        <Pressable 
-          onPress={onPress} 
-          style={[glassStyles.buttonOuter, flex && { flex: 1 }]}
-        >
+        <Pressable onPress={onPress} style={[glassStyles.buttonOuter, flex && { flex: 1 }]}>
           <GlassView
             style={[
               glassStyles.buttonGlass,
               isPrimary && { backgroundColor: blueColor },
-              isOutline && { borderWidth: 1, borderColor: colors.border }
+              isOutline && { borderWidth: 1, borderColor: colors.border },
             ]}
             glassEffectStyle="regular"
             tintColor={isPrimary ? blueColor : undefined}
-            isInteractive
-          >
+            isInteractive>
             <View style={glassStyles.buttonContent}>
               {icon && (
-                <Icon 
-                  name={icon as any} 
-                  size={isPrimary ? 22 : 18} 
-                  color={isPrimary ? '#FFFFFF' : colors.text} 
+                <Icon
+                  name={icon as any}
+                  size={isPrimary ? 22 : 18}
+                  color={isPrimary ? '#FFFFFF' : colors.text}
                 />
               )}
-              <ThemedText style={[
-                glassStyles.buttonText, 
-                { color: isPrimary ? '#FFFFFF' : colors.text },
-                !isPrimary && { fontSize: 15 }
-              ]}>
+              <ThemedText
+                style={[
+                  glassStyles.buttonText,
+                  { color: isPrimary ? '#FFFFFF' : colors.text },
+                  !isPrimary && { fontSize: 15 },
+                ]}>
                 {title}
               </ThemedText>
             </View>
@@ -168,26 +156,23 @@ export default function ScanResultsScreen() {
     }
 
     return (
-      <Pressable 
-        onPress={onPress} 
-        style={[glassStyles.buttonOuter, flex && { flex: 1 }]}
-      >
+      <Pressable onPress={onPress} style={[glassStyles.buttonOuter, flex && { flex: 1 }]}>
         <BlurView
           intensity={60}
-          tint={colors.isDark ? "dark" : "light"}
+          tint={colors.isDark ? 'dark' : 'light'}
           style={[
             glassStyles.buttonBlur,
-            isOutline && { borderWidth: 1, borderColor: colors.border }
-          ]}
-        >
+            isOutline && { borderWidth: 1, borderColor: colors.border },
+          ]}>
           <LinearGradient
-            colors={isPrimary 
-              ? (colors.isDark 
-                  ? ['rgba(10, 132, 255, 0.95)', 'rgba(0, 122, 255, 0.9)'] as [string, string]
-                  : ['rgba(0, 122, 255, 0.98)', 'rgba(0, 100, 220, 0.95)'] as [string, string])
-              : (colors.isDark
-                  ? ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)'] as [string, string]
-                  : ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)'] as [string, string])
+            colors={
+              isPrimary
+                ? colors.isDark
+                  ? (['rgba(10, 132, 255, 0.95)', 'rgba(0, 122, 255, 0.9)'] as [string, string])
+                  : (['rgba(0, 122, 255, 0.98)', 'rgba(0, 100, 220, 0.95)'] as [string, string])
+                : colors.isDark
+                  ? (['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.06)'] as [string, string])
+                  : (['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.85)'] as [string, string])
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -195,17 +180,18 @@ export default function ScanResultsScreen() {
           />
           <View style={glassStyles.buttonContent}>
             {icon && (
-              <Icon 
-                name={icon as any} 
-                size={isPrimary ? 22 : 18} 
-                color={isPrimary ? '#FFFFFF' : colors.text} 
+              <Icon
+                name={icon as any}
+                size={isPrimary ? 22 : 18}
+                color={isPrimary ? '#FFFFFF' : colors.text}
               />
             )}
-            <ThemedText style={[
-              glassStyles.buttonText, 
-              { color: isPrimary ? '#FFFFFF' : colors.text },
-              !isPrimary && { fontSize: 15 }
-            ]}>
+            <ThemedText
+              style={[
+                glassStyles.buttonText,
+                { color: isPrimary ? '#FFFFFF' : colors.text },
+                !isPrimary && { fontSize: 15 },
+              ]}>
               {title}
             </ThemedText>
           </View>
@@ -229,7 +215,7 @@ export default function ScanResultsScreen() {
       const data: RoomPlanData = JSON.parse(jsonContent);
       setRoomData(data);
     } catch (error) {
-      console.error("[Scan Results] Failed to parse JSON:", error);
+      console.error('[Scan Results] Failed to parse JSON:', error);
     } finally {
       setIsLoading(false);
     }
@@ -253,8 +239,10 @@ export default function ScanResultsScreen() {
 
     const roomLabel = sections.length > 0 ? sections[0].label : null;
 
-    let minX = Infinity, maxX = -Infinity;
-    let minZ = Infinity, maxZ = -Infinity;
+    let minX = Infinity,
+      maxX = -Infinity;
+    let minZ = Infinity,
+      maxZ = -Infinity;
     let wallHeight = 0;
     let totalWallArea = 0;
 
@@ -264,7 +252,7 @@ export default function ScanResultsScreen() {
         if (height > wallHeight) wallHeight = height;
         totalWallArea += width * height;
       }
-      
+
       const pos = getPositionFromTransform(wall.transform);
       if (pos) {
         minX = Math.min(minX, pos.x);
@@ -284,7 +272,7 @@ export default function ScanResultsScreen() {
 
     const roomWidth = maxX !== -Infinity ? Math.abs(maxX - minX) : 0;
     const roomDepth = maxZ !== -Infinity ? Math.abs(maxZ - minZ) : 0;
-    
+
     if (floorArea === 0 && roomWidth > 0 && roomDepth > 0) {
       floorArea = roomWidth * roomDepth;
     }
@@ -320,96 +308,82 @@ export default function ScanResultsScreen() {
 
   const view3DModel = async () => {
     if (!params.scanUrl) {
-      Alert.alert("No Model", "No 3D model available.");
+      Alert.alert('No Model', 'No 3D model available.');
       return;
     }
 
     try {
-      if (openFile) {
-        // Decode the URL in case it was encoded during navigation
+      // Use expo-sharing to open the 3D model with iOS Quick Look
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
         const decodedUrl = decodeURIComponent(params.scanUrl);
-        const filePath = decodedUrl.replace("file://", "");
-        
-        console.log("[Scan Results] Opening 3D model:", filePath);
-        
-        await openFile(filePath, {
-          displayName: "Room 3D Model",
-          showOpenWithDialog: false,
-          onDismiss: () => {
-            console.log("[Scan Results] Quick Look dismissed");
-          },
+        console.log('[Scan Results] Opening 3D model:', decodedUrl);
+
+        await Sharing.shareAsync(decodedUrl, {
+          mimeType: 'model/vnd.usdz+zip',
+          dialogTitle: 'Room 3D Model',
+          UTI: 'com.pixar.universal-scene-description-mobile',
         });
       } else {
-        // Fallback to expo-sharing
-        const isAvailable = await Sharing.isAvailableAsync();
-        if (isAvailable) {
-          const decodedUrl = decodeURIComponent(params.scanUrl);
-          await Sharing.shareAsync(decodedUrl, {
-            mimeType: "model/vnd.usdz+zip",
-            dialogTitle: "Room 3D Model",
-            UTI: "com.pixar.universal-scene-description-mobile",
-          });
-        } else {
-          Alert.alert("Not Available", "File sharing is not available on this device.");
-        }
+        Alert.alert('Not Available', 'File sharing is not available on this device.');
       }
     } catch (error: any) {
       // Don't show error if user just dismissed the viewer
       if (error?.message?.includes('cancel') || error?.message?.includes('dismiss')) {
-        console.log("[Scan Results] User dismissed 3D model viewer");
+        console.log('[Scan Results] User dismissed 3D model viewer');
         return;
       }
-      console.error("[Scan Results] Failed to open 3D model:", error);
-      Alert.alert("Error", "Failed to open 3D model viewer.");
+      console.error('[Scan Results] Failed to open 3D model:', error);
+      Alert.alert('Error', 'Failed to open 3D model viewer.');
     }
   };
 
   const summary = getRoomSummary();
 
   const labelMap: Record<string, string> = {
-    livingRoom: "Living Room",
-    bedroom: "Bedroom",
-    kitchen: "Kitchen",
-    bathroom: "Bathroom",
-    diningRoom: "Dining Room",
-    office: "Office",
-    hallway: "Hallway",
-    laundry: "Laundry",
-    garage: "Garage",
-    closet: "Closet",
+    livingRoom: 'Living Room',
+    bedroom: 'Bedroom',
+    kitchen: 'Kitchen',
+    bathroom: 'Bathroom',
+    diningRoom: 'Dining Room',
+    office: 'Office',
+    hallway: 'Hallway',
+    laundry: 'Laundry',
+    garage: 'Garage',
+    closet: 'Closet',
   };
 
   const categoryLabels: Record<string, string> = {
-    sofa: "Sofa",
-    chair: "Chair",
-    table: "Table",
-    bed: "Bed",
-    storage: "Storage",
-    television: "TV",
-    fireplace: "Fireplace",
-    bathtub: "Bathtub",
-    toilet: "Toilet",
-    sink: "Sink",
-    refrigerator: "Refrigerator",
-    stove: "Stove",
-    dishwasher: "Dishwasher",
-    washer: "Washer",
-    dryer: "Dryer",
+    sofa: 'Sofa',
+    chair: 'Chair',
+    table: 'Table',
+    bed: 'Bed',
+    storage: 'Storage',
+    television: 'TV',
+    fireplace: 'Fireplace',
+    bathtub: 'Bathtub',
+    toilet: 'Toilet',
+    sink: 'Sink',
+    refrigerator: 'Refrigerator',
+    stove: 'Stove',
+    dishwasher: 'Dishwasher',
+    washer: 'Washer',
+    dryer: 'Dryer',
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Header title="Scan Results" showBackButton />
-      
-      <ScrollView 
+
+      <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 140 }}
-        showsVerticalScrollIndicator={false}
-      >
+        showsVerticalScrollIndicator={false}>
         {/* Success Header */}
         <AnimatedView animation="fadeInUp" delay={0}>
           <LiquidGlassCard style={{ marginBottom: 20 }}>
             <View style={glassStyles.successContent}>
-              <View style={[glassStyles.successIcon, { backgroundColor: 'rgba(169, 204, 156, 0.25)' }]}>
+              <View
+                style={[glassStyles.successIcon, { backgroundColor: 'rgba(169, 204, 156, 0.25)' }]}>
                 <Icon name="CheckCircle" size={36} color="#A9CC9C" />
               </View>
               <ThemedText style={[glassStyles.successTitle, { color: colors.text }]}>
@@ -439,10 +413,19 @@ export default function ScanResultsScreen() {
                 {(summary.floorArea || summary.totalWallArea) && (
                   <View style={glassStyles.areaRow}>
                     {summary.floorArea && (
-                      <View style={[glassStyles.areaCard, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+                      <View
+                        style={[
+                          glassStyles.areaCard,
+                          {
+                            backgroundColor: colors.isDark
+                              ? 'rgba(255,255,255,0.05)'
+                              : 'rgba(0,0,0,0.03)',
+                          },
+                        ]}>
                         <View style={glassStyles.areaHeader}>
                           <Icon name="Square" size={16} color={colors.iconAccent} />
-                          <ThemedText style={[glassStyles.areaLabel, { color: colors.placeholder }]}>
+                          <ThemedText
+                            style={[glassStyles.areaLabel, { color: colors.placeholder }]}>
                             Floor Area
                           </ThemedText>
                         </View>
@@ -455,10 +438,19 @@ export default function ScanResultsScreen() {
                       </View>
                     )}
                     {summary.totalWallArea && (
-                      <View style={[glassStyles.areaCard, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+                      <View
+                        style={[
+                          glassStyles.areaCard,
+                          {
+                            backgroundColor: colors.isDark
+                              ? 'rgba(255,255,255,0.05)'
+                              : 'rgba(0,0,0,0.03)',
+                          },
+                        ]}>
                         <View style={glassStyles.areaHeader}>
                           <Icon name="Layers" size={16} color="#FFE5A0" />
-                          <ThemedText style={[glassStyles.areaLabel, { color: colors.placeholder }]}>
+                          <ThemedText
+                            style={[glassStyles.areaLabel, { color: colors.placeholder }]}>
                             Wall Area
                           </ThemedText>
                         </View>
@@ -475,16 +467,22 @@ export default function ScanResultsScreen() {
 
                 {/* Dimensions */}
                 {(summary.roomWidth || summary.roomDepth || summary.wallHeight) && (
-                  <View style={[glassStyles.dimensionsCard, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+                  <View
+                    style={[
+                      glassStyles.dimensionsCard,
+                      {
+                        backgroundColor: colors.isDark
+                          ? 'rgba(255,255,255,0.05)'
+                          : 'rgba(0,0,0,0.03)',
+                      },
+                    ]}>
                     <ThemedText style={[glassStyles.dimensionsTitle, { color: colors.text }]}>
                       Dimensions
                     </ThemedText>
                     <View style={glassStyles.dimensionsList}>
                       {summary.roomWidth && summary.roomDepth && (
                         <View style={glassStyles.dimensionRow}>
-                          <ThemedText style={{ color: colors.placeholder }}>
-                            Floor Size
-                          </ThemedText>
+                          <ThemedText style={{ color: colors.placeholder }}>Floor Size</ThemedText>
                           <ThemedText style={[glassStyles.dimensionValue, { color: colors.text }]}>
                             {summary.roomWidth}m × {summary.roomDepth}m
                           </ThemedText>
@@ -502,9 +500,7 @@ export default function ScanResultsScreen() {
                       )}
                       {summary.estimatedVolume && (
                         <View style={glassStyles.dimensionRow}>
-                          <ThemedText style={{ color: colors.placeholder }}>
-                            Room Volume
-                          </ThemedText>
+                          <ThemedText style={{ color: colors.placeholder }}>Room Volume</ThemedText>
                           <ThemedText style={[glassStyles.dimensionValue, { color: colors.text }]}>
                             {summary.estimatedVolume} m³
                           </ThemedText>
@@ -528,27 +524,67 @@ export default function ScanResultsScreen() {
                 </ThemedText>
                 <View style={glassStyles.elementsGrid}>
                   {summary.wallCount > 0 && (
-                    <View style={[glassStyles.elementBadge, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' }]}>
+                    <View
+                      style={[
+                        glassStyles.elementBadge,
+                        {
+                          backgroundColor: colors.isDark
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(0,0,0,0.04)',
+                        },
+                      ]}>
                       <Icon name="LayoutGrid" size={18} color={colors.iconAccent} />
-                      <ThemedText style={[glassStyles.elementText, { color: colors.text }]}>{summary.wallCount} Walls</ThemedText>
+                      <ThemedText style={[glassStyles.elementText, { color: colors.text }]}>
+                        {summary.wallCount} Walls
+                      </ThemedText>
                     </View>
                   )}
                   {summary.doorCount > 0 && (
-                    <View style={[glassStyles.elementBadge, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' }]}>
+                    <View
+                      style={[
+                        glassStyles.elementBadge,
+                        {
+                          backgroundColor: colors.isDark
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(0,0,0,0.04)',
+                        },
+                      ]}>
                       <Icon name="DoorOpen" size={18} color="#A9CC9C" />
-                      <ThemedText style={[glassStyles.elementText, { color: colors.text }]}>{summary.doorCount} Doors</ThemedText>
+                      <ThemedText style={[glassStyles.elementText, { color: colors.text }]}>
+                        {summary.doorCount} Doors
+                      </ThemedText>
                     </View>
                   )}
                   {summary.windowCount > 0 && (
-                    <View style={[glassStyles.elementBadge, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' }]}>
+                    <View
+                      style={[
+                        glassStyles.elementBadge,
+                        {
+                          backgroundColor: colors.isDark
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(0,0,0,0.04)',
+                        },
+                      ]}>
                       <Icon name="AppWindow" size={18} color={PRIMARY_BLUE} />
-                      <ThemedText style={[glassStyles.elementText, { color: colors.text }]}>{summary.windowCount} Windows</ThemedText>
+                      <ThemedText style={[glassStyles.elementText, { color: colors.text }]}>
+                        {summary.windowCount} Windows
+                      </ThemedText>
                     </View>
                   )}
                   {summary.openingCount > 0 && (
-                    <View style={[glassStyles.elementBadge, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' }]}>
+                    <View
+                      style={[
+                        glassStyles.elementBadge,
+                        {
+                          backgroundColor: colors.isDark
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(0,0,0,0.04)',
+                        },
+                      ]}>
                       <Icon name="ArrowUpRight" size={18} color="#FFE5A0" />
-                      <ThemedText style={[glassStyles.elementText, { color: colors.text }]}>{summary.openingCount} Openings</ThemedText>
+                      <ThemedText style={[glassStyles.elementText, { color: colors.text }]}>
+                        {summary.openingCount} Openings
+                      </ThemedText>
                     </View>
                   )}
                 </View>
@@ -567,10 +603,9 @@ export default function ScanResultsScreen() {
                 </ThemedText>
                 <View style={glassStyles.furnitureGrid}>
                   {summary.objectCategories.map((category, index) => (
-                    <View 
+                    <View
                       key={index}
-                      style={[glassStyles.furnitureBadge, { backgroundColor: colors.accentLight }]}
-                    >
+                      style={[glassStyles.furnitureBadge, { backgroundColor: colors.accentLight }]}>
                       <ThemedText style={[glassStyles.furnitureText, { color: colors.iconAccent }]}>
                         {categoryLabels[category] || category}
                       </ThemedText>
@@ -584,32 +619,38 @@ export default function ScanResultsScreen() {
       </ScrollView>
 
       {/* Bottom Action Buttons - Liquid Glass */}
-      <View style={[glassStyles.bottomActions, { paddingBottom: insets.bottom + 16, backgroundColor: colors.bg }]}>
+      <View
+        style={[
+          glassStyles.bottomActions,
+          { paddingBottom: insets.bottom + 16, backgroundColor: colors.bg },
+        ]}>
         {/* Get Quotation - Primary */}
         <LiquidGlassButton
           onPress={() => {
             Alert.alert(
-              "Get Renovation Estimate",
-              "Would you like to get an approximate cost estimate for renovating this room based on your AR scan?",
+              'Get Renovation Estimate',
+              'Would you like to get an approximate cost estimate for renovating this room based on your AR scan?',
               [
-                { text: "Not Now", style: "cancel" },
-                { 
-                  text: "Yes, Get Estimate", 
+                { text: 'Not Now', style: 'cancel' },
+                {
+                  text: 'Yes, Get Estimate',
                   onPress: () => {
                     // Navigate to AR quotation with scan data
-                    const scanData = summary ? {
-                      floorArea: summary.floorArea || '0',
-                      roomWidth: summary.roomWidth || '0',
-                      roomDepth: summary.roomDepth || '0',
-                      roomLabel: summary.roomLabel || '',
-                      wallArea: summary.totalWallArea || '0',
-                    } : {};
+                    const scanData = summary
+                      ? {
+                          floorArea: summary.floorArea || '0',
+                          roomWidth: summary.roomWidth || '0',
+                          roomDepth: summary.roomDepth || '0',
+                          roomLabel: summary.roomLabel || '',
+                          wallArea: summary.totalWallArea || '0',
+                        }
+                      : {};
                     router.push({
                       pathname: '/screens/ar-quotation',
                       params: scanData,
                     });
-                  }
-                }
+                  },
+                },
               ]
             );
           }}
@@ -627,9 +668,11 @@ export default function ScanResultsScreen() {
             variant="secondary"
             flex
           />
-          
+
           <LiquidGlassButton
-            onPress={() => Alert.alert("Add Items", "This feature will allow you to add furniture and items.")}
+            onPress={() =>
+              Alert.alert('Add Items', 'This feature will allow you to add furniture and items.')
+            }
             title="Add Items"
             icon="Plus"
             variant="outline"

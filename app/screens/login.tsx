@@ -1,27 +1,33 @@
-import React from 'react';
-import { View, Pressable, ScrollView, KeyboardAvoidingView, Platform, TextInput } from 'react-native';
-import { Stack, Link, router } from 'expo-router';
-import ThemedText from '@/components/ThemedText';
-import { Button } from '@/components/Button';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 import { AntDesign } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Stack, Link, router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import {
+  View,
+  Pressable,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TextInput,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { Button } from '@/components/Button';
+import ThemedText from '@/components/ThemedText';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
 
-
-
-
-
   return (
     <>
-      <Stack.Screen options={{
-        headerShown: false,
-        animation: 'none',
-      }} />
-      <View className='flex-1 bg-black'>
+      <Stack.Screen
+        options={{
+          headerShown: false,
+          animation: 'none',
+        }}
+      />
+      <View className="flex-1 bg-black">
         <LinearGradient colors={['rgba(255,32,56,0.1)', '#000']} style={{ flex: 1 }}>
           <ScrollView
             contentContainerStyle={{ flex: 1 }}
@@ -29,28 +35,34 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
             bounces={false}
             className="flex-1">
-            <StatusBar style='light' />
-
+            <StatusBar style="light" />
 
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-              className='flex-1 justify-center w-full'
-
-            >
-              <View className=' w-full flex-1'>
-                <View className=' py-14 justify-center px-10' style={{ paddingTop: insets.top + 100 }}>
-                  <ThemedText className="text-4xl text-center font-outfit-bold">Go ahead and set up your account</ThemedText>
-                  <ThemedText className="text-sm text-center opacity-50 mt-2">No account yet? <Link href="/screens/signup" className='text-pink-200 font-bold underline'>Signup</Link></ThemedText>
+              className="w-full flex-1 justify-center">
+              <View className=" w-full flex-1">
+                <View
+                  className=" justify-center px-10 py-14"
+                  style={{ paddingTop: insets.top + 100 }}>
+                  <ThemedText className="text-center font-outfit-bold text-4xl">
+                    Go ahead and set up your account
+                  </ThemedText>
+                  <ThemedText className="mt-2 text-center text-sm opacity-50">
+                    No account yet?{' '}
+                    <Link href="/screens/signup" className="font-bold text-pink-200 underline">
+                      Signup
+                    </Link>
+                  </ThemedText>
                 </View>
-                <View className='p-global gap-4'>
+                <View className="gap-4 p-global">
                   <TextInput
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoComplete="email"
                     placeholder="Email"
                     placeholderTextColor="white"
-                    className="text-white bg-white/20 rounded-full px-5 py-5"
+                    className="rounded-full bg-white/20 px-5 py-5 text-white"
                   />
 
                   <TextInput
@@ -59,34 +71,33 @@ export default function LoginScreen() {
                     autoComplete="password"
                     placeholder="Password"
                     placeholderTextColor="white"
-                    secureTextEntry={true}
-                    className="text-white bg-white/20 rounded-full px-5 py-5"
+                    secureTextEntry
+                    className="rounded-full bg-white/20 px-5 py-5 text-white"
                   />
                   <Button
                     title="Login"
                     size="large"
                     className="mb-4 !bg-highlight"
                     rounded="full"
-                    textClassName='!text-white'
+                    textClassName="!text-white"
                     href="/screens/onboarding-start"
                   />
-                  <Link className='underline text-center text-text text-sm mb-4' href="/screens/forgot-password">
+                  <Link
+                    className="mb-4 text-center text-sm text-text underline"
+                    href="/screens/forgot-password">
                     Forgot Password?
                   </Link>
 
-
-                  <View className='flex flex-row items-center justify-center gap-2'>
+                  <View className="flex flex-row items-center justify-center gap-2">
                     <Pressable
                       onPress={() => router.push('/screens/onboarding-start')}
-                      className='flex-1 border border-white rounded-full flex flex-row items-center justify-center py-4'
-                    >
+                      className="flex flex-1 flex-row items-center justify-center rounded-full border border-white py-4">
                       <AntDesign name="google" size={22} color="white" />
                     </Pressable>
 
                     <Pressable
                       onPress={() => router.push('/screens/onboarding-start')}
-                      className='flex-1 border border-white rounded-full flex flex-row items-center justify-center py-4'
-                    >
+                      className="flex flex-1 flex-row items-center justify-center rounded-full border border-white py-4">
                       <AntDesign name="apple" size={22} color="white" />
                     </Pressable>
                   </View>
@@ -96,7 +107,6 @@ export default function LoginScreen() {
           </ScrollView>
         </LinearGradient>
       </View>
-
     </>
   );
 }

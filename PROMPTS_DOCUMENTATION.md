@@ -1,4 +1,4 @@
-# NovaHogar AI Prompt System Documentation
+# scan3D AI Prompt System Documentation
 
 This document describes how prompts are built and sent to the OpenAI API for room redesign generation.
 

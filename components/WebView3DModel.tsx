@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
-import useThemeColors from '@/app/contexts/ThemeColors';
+
 import ThemedText from './ThemedText';
+
+import useThemeColors from '@/app/contexts/ThemeColors';
 
 interface WebView3DModelProps {
   modelUrl: string; // URL to the GLB model (must be a web URL, not local file)
@@ -18,7 +20,7 @@ interface WebView3DModelProps {
 /**
  * WebView-based 3D model viewer using Google's model-viewer
  * Supports pinch-to-zoom, rotate with one finger, and pan with two fingers
- * 
+ *
  * Note: The model must be hosted at a web URL (not a local file)
  * You can use services like:
  * - GitHub raw files
@@ -40,6 +42,9 @@ const WebView3DModel: React.FC<WebView3DModelProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Check if the URL is a USDZ file (Apple's AR format)
+  const isUsdz = modelUrl.toLowerCase().endsWith('.usdz');
+
   // Generate the HTML content with model-viewer
   const htmlContent = `
     <!DOCTYPE html>
@@ -48,7 +53,7 @@ const WebView3DModel: React.FC<WebView3DModelProps> = ({
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
       <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
       <style>
-        * { M1000026MM41.usdz
+        * {
           margin: 0;
           padding: 0;
           box-sizing: border-box;
@@ -72,6 +77,7 @@ const WebView3DModel: React.FC<WebView3DModelProps> = ({
     <body>
       <model-viewer
         src="${modelUrl}"
+        ${isUsdz ? `ios-src="${modelUrl}"` : ''}
         ${poster ? `poster="${poster}"` : ''}
         ${autoRotate ? 'auto-rotate' : ''}
         ${cameraControls ? 'camera-controls' : ''}
@@ -81,14 +87,37 @@ const WebView3DModel: React.FC<WebView3DModelProps> = ({
         shadow-intensity="1"
         exposure="1"
         environment-image="neutral"
+        loading="eager"
       ></model-viewer>
       <script>
         const modelViewer = document.querySelector('model-viewer');
+        let loadTimeout;
+        
+        // Set a timeout in case loading hangs
+        loadTimeout = setTimeout(() => {
+          window.ReactNativeWebView.postMessage(JSON.stringify({ 
+            type: 'error', 
+            message: 'Model loading timed out. The format may not be supported for web viewing.' 
+          }));
+        }, 15000);
+        
         modelViewer.addEventListener('load', () => {
+          clearTimeout(loadTimeout);
           window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'loaded' }));
         });
-        modelViewer.addEventListener('error', (error) => {
-          window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', message: error.message || 'Failed to load model' }));
+        
+        modelViewer.addEventListener('error', (event) => {
+          clearTimeout(loadTimeout);
+          const message = event.detail?.message || event.message || 'Failed to load model';
+          window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', message: message }));
+        });
+        
+        // Also listen for model-visibility which fires when model is actually visible
+        modelViewer.addEventListener('model-visibility', (event) => {
+          if (event.detail.visible) {
+            clearTimeout(loadTimeout);
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'loaded' }));
+          }
         });
       </script>
     </body>
@@ -179,4 +208,3 @@ const styles = StyleSheet.create({
 });
 
 export default WebView3DModel;
-

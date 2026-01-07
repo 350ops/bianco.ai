@@ -1,13 +1,13 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import Header from '@/components/Header';
-import ThemedText from '@/components/ThemedText';
-import AnimatedView from '@/components/AnimatedView';
-import Icon from '@/components/Icon';
 import useThemeColors from '@/app/contexts/ThemeColors';
+import AnimatedView from '@/components/AnimatedView';
+import Header from '@/components/Header';
+import Icon from '@/components/Icon';
+import ThemedText from '@/components/ThemedText';
 
 const toRgba = (hexColor: string, alpha: number) => {
   if (!hexColor.startsWith('#')) {
@@ -121,7 +121,7 @@ export default function LightingTipsScreen() {
       <Header showBackButton title="Good lighting" />
       <View className="flex-1 px-global" style={{ paddingBottom: insets.bottom + 20 }}>
         <AnimatedView animation="fadeInUp">
-          <View className="rounded-3xl overflow-hidden border border-border mb-6">
+          <View className="mb-6 overflow-hidden rounded-3xl border border-border">
             <View style={[styles.scene, { backgroundColor: colors.secondary }]}>
               <LinearGradient
                 colors={[
@@ -131,7 +131,9 @@ export default function LightingTipsScreen() {
                 style={StyleSheet.absoluteFill}
               />
 
-              <View style={[styles.window, { borderColor: colors.border, backgroundColor: colors.bg }]} />
+              <View
+                style={[styles.window, { borderColor: colors.border, backgroundColor: colors.bg }]}
+              />
               <View style={[styles.windowBarHorizontal, { backgroundColor: colors.border }]} />
               <View style={[styles.windowBarVertical, { backgroundColor: colors.border }]} />
 
@@ -140,13 +142,21 @@ export default function LightingTipsScreen() {
                 <Animated.View
                   style={[
                     styles.sunHalo,
-                    { borderColor: haloColor, opacity: rayOpacity, transform: [{ scale: rayScale }] },
+                    {
+                      borderColor: haloColor,
+                      opacity: rayOpacity,
+                      transform: [{ scale: rayScale }],
+                    },
                   ]}
                 />
                 <Animated.View
                   style={[
                     styles.sunHaloLarge,
-                    { borderColor: haloColor, opacity: rayOpacity, transform: [{ scale: rayScale }] },
+                    {
+                      borderColor: haloColor,
+                      opacity: rayOpacity,
+                      transform: [{ scale: rayScale }],
+                    },
                   ]}
                 />
               </Animated.View>
@@ -154,23 +164,31 @@ export default function LightingTipsScreen() {
               <Animated.View
                 style={[
                   styles.beam,
-                  { opacity: beamOpacity, transform: [{ translateX: beamShift }, { rotate: '-10deg' }] },
-                ]}
-              >
+                  {
+                    opacity: beamOpacity,
+                    transform: [{ translateX: beamShift }, { rotate: '-10deg' }],
+                  },
+                ]}>
                 <LinearGradient colors={beamColors} style={StyleSheet.absoluteFill} />
               </Animated.View>
               <Animated.View
                 style={[
                   styles.beamTwo,
-                  { opacity: beamOpacity, transform: [{ translateX: beamShift }, { rotate: '-6deg' }] },
-                ]}
-              >
+                  {
+                    opacity: beamOpacity,
+                    transform: [{ translateX: beamShift }, { rotate: '-6deg' }],
+                  },
+                ]}>
                 <LinearGradient colors={beamColors} style={StyleSheet.absoluteFill} />
               </Animated.View>
 
               <View style={[styles.floor, { backgroundColor: toRgba(colors.text, 0.05) }]} />
 
-              <View style={[styles.subject, { borderColor: colors.border, backgroundColor: colors.bg }]}>
+              <View
+                style={[
+                  styles.subject,
+                  { borderColor: colors.border, backgroundColor: colors.bg },
+                ]}>
                 <View style={[styles.subjectHead, { backgroundColor: colors.text }]} />
                 <View style={[styles.subjectBody, { backgroundColor: colors.text }]} />
               </View>
@@ -183,8 +201,7 @@ export default function LightingTipsScreen() {
                     borderColor: colors.border,
                     backgroundColor: colors.bg,
                   },
-                ]}
-              >
+                ]}>
                 <Animated.View
                   style={[
                     styles.cameraRing,
@@ -198,8 +215,8 @@ export default function LightingTipsScreen() {
         </AnimatedView>
 
         <AnimatedView animation="fadeInUp" delay={120}>
-          <ThemedText className="text-2xl font-bold mb-2">What good lighting looks like</ThemedText>
-          <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext mb-4">
+          <ThemedText className="mb-2 text-2xl font-bold">What good lighting looks like</ThemedText>
+          <ThemedText className="text-light-subtext dark:text-dark-subtext mb-4 text-sm">
             Keep the main light source in front of the camera and soften it with curtains for even,
             natural light.
           </ThemedText>
@@ -208,36 +225,36 @@ export default function LightingTipsScreen() {
         <AnimatedView animation="fadeInUp" delay={220}>
           <View className="gap-3">
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Sparkles" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Face the light</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Place the brightest window or lamp in front of you, not behind.
                 </ThemedText>
               </View>
             </View>
 
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Maximize" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Diffuse harsh light</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Use sheer curtains or bounce light off a wall for softer shadows.
                 </ThemedText>
               </View>
             </View>
 
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Camera" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Keep colors consistent</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Turn off mixed bulbs so the room stays warm and true to color.
                 </ThemedText>
               </View>

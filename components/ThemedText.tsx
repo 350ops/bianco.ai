@@ -9,10 +9,7 @@ interface ThemedTextProps extends TextProps {
 
 function ThemedText({ className = '', children, ...props }: ThemedTextProps) {
   return (
-    <Text
-      className={`text-text ${className}`}
-      {...props}
-    >
+    <Text className={`text-text ${className}`} {...props}>
       {children}
     </Text>
   );

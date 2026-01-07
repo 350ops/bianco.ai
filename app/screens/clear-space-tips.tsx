@@ -1,13 +1,13 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import Header from '@/components/Header';
-import ThemedText from '@/components/ThemedText';
-import AnimatedView from '@/components/AnimatedView';
-import Icon from '@/components/Icon';
 import useThemeColors from '@/app/contexts/ThemeColors';
+import AnimatedView from '@/components/AnimatedView';
+import Header from '@/components/Header';
+import Icon from '@/components/Icon';
+import ThemedText from '@/components/ThemedText';
 
 const toRgba = (hexColor: string, alpha: number) => {
   if (!hexColor.startsWith('#')) {
@@ -74,7 +74,7 @@ export default function ClearSpaceTipsScreen() {
       <Header showBackButton title="Clear space" />
       <View className="flex-1 px-global" style={{ paddingBottom: insets.bottom + 20 }}>
         <AnimatedView animation="fadeInUp">
-          <View className="rounded-3xl overflow-hidden border border-border mb-6">
+          <View className="mb-6 overflow-hidden rounded-3xl border border-border">
             <View style={[styles.scene, { backgroundColor: colors.secondary }]}>
               <LinearGradient
                 colors={[
@@ -84,22 +84,39 @@ export default function ClearSpaceTipsScreen() {
                 style={StyleSheet.absoluteFill}
               />
 
-              <View style={[styles.table, { borderColor: colors.border, backgroundColor: colors.bg }]} />
+              <View
+                style={[styles.table, { borderColor: colors.border, backgroundColor: colors.bg }]}
+              />
               <View style={[styles.tableTop, { backgroundColor: toRgba(colors.text, 0.05) }]} />
 
-              <Animated.View style={[styles.clutterOne, { opacity: clutterFade(0), transform: [{ translateX: clutterShift(-18) }] }]}>
+              <Animated.View
+                style={[
+                  styles.clutterOne,
+                  { opacity: clutterFade(0), transform: [{ translateX: clutterShift(-18) }] },
+                ]}>
                 <View style={[styles.clutterBox, { backgroundColor: colors.text }]} />
               </Animated.View>
-              <Animated.View style={[styles.clutterTwo, { opacity: clutterFade(0.12), transform: [{ translateY: clutterShift(14) }] }]}>
+              <Animated.View
+                style={[
+                  styles.clutterTwo,
+                  { opacity: clutterFade(0.12), transform: [{ translateY: clutterShift(14) }] },
+                ]}>
                 <View style={[styles.clutterCircle, { borderColor: colors.text }]} />
               </Animated.View>
-              <Animated.View style={[styles.clutterThree, { opacity: clutterFade(0.24), transform: [{ translateX: clutterShift(16) }] }]}>
+              <Animated.View
+                style={[
+                  styles.clutterThree,
+                  { opacity: clutterFade(0.24), transform: [{ translateX: clutterShift(16) }] },
+                ]}>
                 <View style={[styles.clutterRect, { backgroundColor: colors.text }]} />
               </Animated.View>
 
-              <Animated.View style={[styles.cleanGlow, { opacity: glowOpacity, borderColor: colors.accent }]} />
+              <Animated.View
+                style={[styles.cleanGlow, { opacity: glowOpacity, borderColor: colors.accent }]}
+              />
 
-              <View style={[styles.camera, { borderColor: colors.border, backgroundColor: colors.bg }]}>
+              <View
+                style={[styles.camera, { borderColor: colors.border, backgroundColor: colors.bg }]}>
                 <Icon name="Camera" size={18} color={colors.text} />
               </View>
             </View>
@@ -107,8 +124,8 @@ export default function ClearSpaceTipsScreen() {
         </AnimatedView>
 
         <AnimatedView animation="fadeInUp" delay={120}>
-          <ThemedText className="text-2xl font-bold mb-2">Clear the scene</ThemedText>
-          <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext mb-4">
+          <ThemedText className="mb-2 text-2xl font-bold">Clear the scene</ThemedText>
+          <ThemedText className="text-light-subtext dark:text-dark-subtext mb-4 text-sm">
             Remove small objects and clutter so the AI can read the room layout cleanly.
           </ThemedText>
         </AnimatedView>
@@ -116,36 +133,36 @@ export default function ClearSpaceTipsScreen() {
         <AnimatedView animation="fadeInUp" delay={220}>
           <View className="gap-3">
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Trash" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Clear surfaces</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Remove piles, loose cables, and small decor from tables and floors.
                 </ThemedText>
               </View>
             </View>
 
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Sparkles" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Highlight key furniture</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Leave only the main pieces so the layout feels intentional and clean.
                 </ThemedText>
               </View>
             </View>
 
             <View className="flex-row items-start gap-3 rounded-2xl p-4">
-              <View className="w-10 h-10 rounded-full items-center justify-center bg-background border border-border">
+              <View className="h-10 w-10 items-center justify-center rounded-full border border-border bg-background">
                 <Icon name="Check" size={18} color={colors.iconAccent} />
               </View>
               <View className="flex-1">
                 <ThemedText className="font-semibold">Tidy the floor</ThemedText>
-                <ThemedText className="text-sm text-light-subtext dark:text-dark-subtext">
+                <ThemedText className="text-light-subtext dark:text-dark-subtext text-sm">
                   Make sure walkways are visible for the best room understanding.
                 </ThemedText>
               </View>

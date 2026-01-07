@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, StyleProp, ViewStyle, TouchableOpacity } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import useThemeColors from '@/app/contexts/ThemeColors';
-import ThemedText from './ThemedText';
+
 import Icon from './Icon';
+import ThemedText from './ThemedText';
+
+import useThemeColors from '@/app/contexts/ThemeColors';
 
 interface ThemedCalendarProps {
   onDateChange: (date: Date) => void;
@@ -23,12 +25,8 @@ export const ThemedCalendar: React.FC<ThemedCalendarProps> = ({
   minDate = '1900-01-01',
 }) => {
   const colors = useThemeColors();
-  const [selectedDate, setSelectedDate] = useState(
-    initialDate.toISOString().split('T')[0]
-  );
-  const [currentMonth, setCurrentMonth] = useState(
-    initialDate.toISOString().split('T')[0]
-  );
+  const [selectedDate, setSelectedDate] = useState(initialDate.toISOString().split('T')[0]);
+  const [currentMonth, setCurrentMonth] = useState(initialDate.toISOString().split('T')[0]);
 
   const handleDayPress = (day: any) => {
     setSelectedDate(day.dateString);
@@ -43,10 +41,20 @@ export const ThemedCalendar: React.FC<ThemedCalendarProps> = ({
   const currentYear = new Date().getFullYear();
   const selectedYear = new Date(currentMonth).getFullYear();
   const selectedMonthIndex = new Date(currentMonth).getMonth();
-  
+
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   const jumpToYear = (yearDelta: number) => {
@@ -62,30 +70,28 @@ export const ThemedCalendar: React.FC<ThemedCalendarProps> = ({
   };
 
   return (
-    <View className={`rounded-2xl overflow-hidden ${className}`} style={style}>
+    <View className={`overflow-hidden rounded-2xl ${className}`} style={style}>
       {/* Year Navigation */}
-      <View 
-        style={{ backgroundColor: colors.secondary, borderBottomColor: colors.border, borderBottomWidth: 1 }}
-        className="flex-row justify-between items-center px-4 py-3"
-      >
+      <View
+        style={{
+          backgroundColor: colors.secondary,
+          borderBottomColor: colors.border,
+          borderBottomWidth: 1,
+        }}
+        className="flex-row items-center justify-between px-4 py-3">
         <TouchableOpacity onPress={() => jumpToYear(-1)} className="p-2">
           <Icon name="ChevronLeft" size={20} color={colors.text} />
         </TouchableOpacity>
-        
-        <ThemedText className="text-lg font-semibold">
-          {selectedYear}
-        </ThemedText>
-        
+
+        <ThemedText className="text-lg font-semibold">{selectedYear}</ThemedText>
+
         <TouchableOpacity onPress={() => jumpToYear(1)} className="p-2">
           <Icon name="ChevronRight" size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* Month Quick Navigation */}
-      <View 
-        style={{ backgroundColor: colors.secondary }}
-        className="px-4 py-2"
-      >
+      <View style={{ backgroundColor: colors.secondary }} className="px-4 py-2">
         <View className="flex-row justify-between">
           {months.map((month, index) => (
             <TouchableOpacity
@@ -95,19 +101,17 @@ export const ThemedCalendar: React.FC<ThemedCalendarProps> = ({
                 newDate.setMonth(index);
                 setCurrentMonth(newDate.toISOString().split('T')[0]);
               }}
-              className={`px-2 py-1 rounded ${
+              className={`rounded px-2 py-1 ${
                 index === selectedMonthIndex ? 'opacity-100' : 'opacity-60'
               }`}
               style={{
-                backgroundColor: index === selectedMonthIndex ? colors.highlight : 'transparent'
-              }}
-            >
-              <ThemedText 
+                backgroundColor: index === selectedMonthIndex ? colors.highlight : 'transparent',
+              }}>
+              <ThemedText
                 className="text-xs font-medium"
                 style={{
-                  color: index === selectedMonthIndex ? colors.invert : colors.text
-                }}
-              >
+                  color: index === selectedMonthIndex ? colors.invert : colors.text,
+                }}>
                 {month}
               </ThemedText>
             </TouchableOpacity>
@@ -126,7 +130,7 @@ export const ThemedCalendar: React.FC<ThemedCalendarProps> = ({
             disableTouchEvent: true,
             selectedColor: colors.highlight,
             selectedTextColor: colors.invert,
-          }
+          },
         }}
         theme={{
           backgroundColor: colors.secondary,
@@ -156,11 +160,11 @@ export const ThemedCalendar: React.FC<ThemedCalendarProps> = ({
           backgroundColor: colors.secondary,
           paddingBottom: 10,
         }}
-        hideExtraDays={true}
-        enableSwipeMonths={true}
+        hideExtraDays
+        enableSwipeMonths
         maxDate={maxDate}
         minDate={minDate}
-        monthFormat={'MMMM yyyy'}
+        monthFormat="MMMM yyyy"
         firstDay={1}
         showWeekNumbers={false}
       />
@@ -168,4 +172,4 @@ export const ThemedCalendar: React.FC<ThemedCalendarProps> = ({
   );
 };
 
-export default ThemedCalendar; 
+export default ThemedCalendar;
