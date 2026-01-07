@@ -6,25 +6,25 @@ interface ThemedScrollerProps extends ScrollViewProps {
   children: React.ReactNode;
 }
 
-export default function ThemedScroller({ 
-  className = '', 
-  children, 
+function ThemedScroller({
+  className = '',
+  children,
   contentContainerStyle,
-  ...props 
+  ...props
 }: ThemedScrollerProps) {
   return (
     <ScrollView
-      className={`px-global bg-background ${className}`}
+      className={`bg-background px-global ${className}`}
       bounces={false}
-      contentContainerStyle={[
-        { flexGrow: 1 },
-        contentContainerStyle
-      ]}
+      contentContainerStyle={[{ flexGrow: 1 }, contentContainerStyle]}
       showsVerticalScrollIndicator={false}
-      {...props}
-    >
+      {...props}>
       {children}
       <View className="h-24 " />
     </ScrollView>
   );
 }
+
+// Support both named and default imports (also alias as ThemeScroller)
+export { ThemedScroller, ThemedScroller as ThemeScroller };
+export default ThemedScroller;

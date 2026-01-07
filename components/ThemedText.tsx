@@ -7,13 +7,14 @@ interface ThemedTextProps extends TextProps {
   children: React.ReactNode;
 }
 
-export default function ThemedText({ className = '', children, ...props }: ThemedTextProps) {
+function ThemedText({ className = '', children, ...props }: ThemedTextProps) {
   return (
-    <Text
-      className={`text-text ${className}`}
-      {...props}
-    >
+    <Text className={`text-text ${className}`} {...props}>
       {children}
     </Text>
   );
 }
+
+// Support both named and default imports
+export { ThemedText };
+export default ThemedText;

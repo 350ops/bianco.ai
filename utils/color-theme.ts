@@ -1,24 +1,25 @@
-import { vars } from "nativewind";
+import { vars } from 'nativewind';
 
 export const themes = {
   light: vars({
-    "--color-primary": "#000000", 
-    "--color-invert": "#ffffff",      // black
-    "--color-secondary": "#ffffff",    // gray-500
-    "--color-background": "#F4F4F5",
-    "--color-darker": "#F4F4F5",   // white
-    "--color-text": "#000000",     
-    "--color-highlight": "#FF2056",    // black text
-    "--color-border": "rgba(0, 0, 0, 0.15)",
+    '--color-primary': '#05AAC3', // Teal (brand / navigation)
+    '--color-invert': '#ffffff',
+    '--color-secondary': '#ffffff', // Pastel green accents
+    '--color-background': '#FFFFFF',
+    '--color-darker': '#015D4C', // Text / strong contrast
+    '--color-text': '#000000',
+    '--color-highlight': '#DF3872', // Pink CTA
+    '--color-border': 'rgba(1, 93, 76, 0.2)',
   }),
+
   dark: vars({
-    "--color-primary": "#ffffff",      // white
-    "--color-invert": "#000000",      // black
-    "--color-secondary": "#262626",    // gray-400
-    "--color-background": "#0A0A0A",
-    "--color-darker": "#000000",   // black
-    "--color-text": "#ffffff",  
-    "--color-highlight": "#FF2056",        // white text
-    "--color-border": "rgba(255, 255, 255, 0.15)",
+    '--color-primary': '#50A673',
+    '--color-invert': '#000000',
+    '--color-secondary': '#1A1A1E',
+    '--color-background': '#0B0B0D',
+    '--color-darker': '#000000',
+    '--color-text': '#ffffff',
+    '--color-highlight': '#FF62A7', // Brighter pink for dark mode
+    '--color-border': 'rgba(255, 255, 255, 0.15)',
   }),
-}; 
+};

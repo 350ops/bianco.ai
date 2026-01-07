@@ -1,34 +1,108 @@
-import { View } from "react-native";
-import Header from "@/components/Header";
-import ThemedScroller from "@/components/ThemeScroller";
-import Section from "@/components/layout/Section";
-import Switch from "@/components/forms/Switch";
-import { useState } from "react";
+import { useState } from 'react';
+import { View, Platform } from 'react-native';
 
-export default function NotificationSettingsScreen() {
-    const [transactionAlerts, setTransactionAlerts] = useState(true);
-    const [paymentReceived, setPaymentReceived] = useState(true);
-    const [lowBalance, setLowBalance] = useState(true);
-    const [securityAlerts, setSecurityAlerts] = useState(true);
-    const [monthlyStatement, setMonthlyStatement] = useState(false);
-    const [promotions, setPromotions] = useState(false);
+import Header from '@/components/Header';
+import ThemedScroller from '@/components/ThemeScroller';
+import Switch from '@/components/forms/Switch';
+import Section from '@/components/layout/Section';
 
-    return (
-        <>
-            <Header showBackButton />
-            <ThemedScroller className="p-global">
+// Try to import @expo/ui components for iOS 26+
+let useExpoUI = false;
+let Host: any, Form: any, ExpoSection: any, ExpoSwitch: any;
 
-                <Section title="Notification Settings" titleSize="4xl" className="mt-4 mb-10" />
-                <View className="bg-secondary rounded-2xl overflow-hidden">
-                    <Switch label="Generation complete" description="When your AI image generation is ready" icon="Sparkles" value={transactionAlerts} onChange={setTransactionAlerts} />
-                    <Switch label="Likes & reactions" description="When someone likes your shared images" icon="Heart" value={paymentReceived} onChange={setPaymentReceived} />
-                    <Switch label="Comments" description="New comments on your generated images" icon="MessageCircle" value={lowBalance} onChange={setLowBalance} />
-                    <Switch label="Remixes & variations" description="When someone remixes your creation" icon="RefreshCw" value={securityAlerts} onChange={setSecurityAlerts} />
-                    <Switch label="New followers" description="Get notified when someone follows you" icon="UserPlus" value={monthlyStatement} onChange={setMonthlyStatement} />
-                    <Switch label="Generation trends" description="Weekly trending prompts and styles" icon="TrendingUp" value={promotions} onChange={setPromotions} />
-                </View>
-            </ThemedScroller>
-        </>
-    )
+if (Platform.OS === 'ios') {
+  try {
+    const expoUI = require('@expo/ui/swift-ui');
+    if (expoUI?.Form && expoUI?.Section) {
+      useExpoUI = true;
+      Host = expoUI.Host;
+      Form = expoUI.Form;
+      ExpoSection = expoUI.Section;
+      ExpoSwitch = expoUI.Switch;
+    }
+  } catch (e) {
+    // @expo/ui not available
+  }
 }
 
+// Native iOS 26 Notification Settings
+function NativeNotificationSettings() {
+  const [generationComplete, setGenerationComplete] = useState(true);
+  const [estimateReady, setEstimateReady] = useState(true);
+  const [promotions, setPromotions] = useState(false);
+  const [systemUpdates, setSystemUpdates] = useState(true);
+
+  return (
+    <Host style={{ flex: 1 }}>
+      <Form>
+        <ExpoSection title="AI Generation">
+          <ExpoSwitch
+            value={generationComplete}
+            label="Generation Complete"
+            onValueChange={setGenerationComplete}
+          />
+        </ExpoSection>
+
+        <ExpoSection title="Estimates">
+          <ExpoSwitch
+            value={estimateReady}
+            label="Estimate Ready"
+            onValueChange={setEstimateReady}
+          />
+        </ExpoSection>
+
+        <ExpoSection title="Marketing">
+          <ExpoSwitch
+            value={promotions}
+            label="Promotions & Offers"
+            onValueChange={setPromotions}
+          />
+          <ExpoSwitch
+            value={systemUpdates}
+            label="System Updates"
+            onValueChange={setSystemUpdates}
+          />
+        </ExpoSection>
+      </Form>
+    </Host>
+  );
+}
+
+// Classic Notification Settings
+function ClassicNotificationSettings() {
+  const [generationComplete, setGenerationComplete] = useState(true);
+
+  return (
+    <ThemedScroller className="p-global">
+      <Section title="Notification Settings" titleSize="4xl" className="mb-10 mt-4" />
+      <View className="overflow-hidden rounded-2xl">
+        <Switch
+          label="Generation complete"
+          description="When your AI image generation is ready"
+          icon="Sparkles"
+          value={generationComplete}
+          onChange={setGenerationComplete}
+          className="!border-b-0"
+        />
+      </View>
+    </ThemedScroller>
+  );
+}
+
+export default function NotificationSettingsScreen() {
+  if (useExpoUI) {
+    return (
+      <>
+        <Header showBackButton />
+        <NativeNotificationSettings />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header showBackButton />
+      <ClassicNotificationSettings />
+    </>
+  );
+}

@@ -1,8 +1,11 @@
+import { Link } from 'expo-router';
 import React from 'react';
 import { View, Pressable, ViewStyle } from 'react-native';
-import { Link } from 'expo-router';
+
 import Icon, { IconName } from './Icon';
 import ThemedText from './ThemedText';
+
+import useThemeColors from '@/app/contexts/ThemeColors';
 
 interface ListLinkProps {
   icon?: IconName;
@@ -28,33 +31,32 @@ const ListLink: React.FC<ListLinkProps> = ({
   showChevron = false,
   className = '',
   iconSize = 20,
-  rightIcon = "ChevronRight",
+  rightIcon = 'ChevronRight',
   disabled = false,
   style,
-  hasBorder = false
+  hasBorder = false,
 }) => {
+  const colors = useThemeColors();
+
   // Component for the actual content
   const Content = () => (
-    <View className={`flex-row items-center border-b border-border py-4 pl-2 pr-4 ${className} ${disabled ? 'opacity-50' : ''}`} style={style}>
+    <View
+      className={`flex-row items-center border-b border-border py-4 pl-2 pr-4 ${className} ${disabled ? 'opacity-50' : ''}`}
+      style={style}>
       {icon && (
-        <View className="mr-4 h-12 w-12 rounded-full  items-center justify-center">
-          <Icon name={icon} size={iconSize} />
+        <View
+          className="mr-4 h-12 w-12 items-center justify-center rounded-full"
+          style={{ backgroundColor: colors.accentLight }}>
+          <Icon name={icon} size={iconSize} color={colors.iconAccent} />
         </View>
       )}
       <View className="flex-1">
         <ThemedText className="text-base font-semibold">{title}</ThemedText>
-        {description && (
-          <ThemedText className="text-xs opacity-50">
-            {description}
-          </ThemedText>
-        )}
+        {description && <ThemedText className="text-xs opacity-50">{description}</ThemedText>}
       </View>
       {showChevron && (
-        <View className='opacity-50'>
-          <Icon
-            name={rightIcon}
-            size={20}
-          />
+        <View className="opacity-50">
+          <Icon name={rightIcon} size={20} />
         </View>
       )}
     </View>
@@ -64,7 +66,7 @@ const ListLink: React.FC<ListLinkProps> = ({
   if (href && !disabled) {
     return (
       <Link href={href} asChild>
-        <Pressable className={`w-full  ${hasBorder ?  'border-b border-border' : ''}`}>
+        <Pressable className={`w-full  ${hasBorder ? 'border-b border-border' : ''}`}>
           <Content />
         </Pressable>
       </Link>
@@ -74,11 +76,10 @@ const ListLink: React.FC<ListLinkProps> = ({
   return (
     <Pressable
       onPress={disabled ? undefined : onPress}
-      className={` ${hasBorder ? 'border-b border-border' : ''}`}
-    >
+      className={` ${hasBorder ? 'border-b border-border' : ''}`}>
       <Content />
     </Pressable>
   );
 };
 
-export default ListLink; 
+export default ListLink;

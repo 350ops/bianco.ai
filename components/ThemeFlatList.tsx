@@ -13,11 +13,11 @@ function ThemedFlatListInner<T>(
 ) {
   return (
     <FlatList
-      bounces={true}
-      overScrollMode='never'
+      bounces
+      overScrollMode="never"
       ref={ref}
       showsVerticalScrollIndicator={false}
-      className={`bg-background dark:bg-dark-primary flex-1 px-global ${className || ''}`}
+      className={`dark:bg-dark-primary flex-1 bg-background px-global ${className || ''}`}
       {...props}
     />
   );
@@ -28,4 +28,9 @@ const ThemedFlatList = forwardRef(ThemedFlatListInner) as <T>(
   props: ThemedFlatListProps<T> & { ref?: React.Ref<FlatList<T>> }
 ) => React.ReactElement;
 
+// Add displayName for debugging
+(ThemedFlatList as any).displayName = 'ThemedFlatList';
+
+// Support both named and default imports
+export { ThemedFlatList };
 export default ThemedFlatList;

@@ -4,15 +4,26 @@
     "appVersionSource": "remote"
   },
   "build": {
+    
     "development": {
+      
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
+      "env": {
+  "EXPO_PUBLIC_OPENAI_API_KEY": "https://api.openai.com",
+  "EXPO_PUBLIC_SUPABASE_URL": "https://oycjgvhhobjzoohjlqmx.supabase.co"
+},
       "distribution": "internal"
     },
     "production": {
+     "env": {
+  "EXPO_PUBLIC_OPENAI_API_URL": "https://api.openai.com",
+  "EXPO_PUBLIC_SUPABASE_URL": "https://oycjgvhhobjzoohjlqmx.supabase.co"
+},
       "autoIncrement": true
+      
     }
   },
   "submit": {

@@ -1,12 +1,14 @@
+import { router } from 'expo-router';
 import React, { useState, useRef } from 'react';
 import { Pressable, View, Text } from 'react-native';
-import Icon from './Icon';
-import { Button } from './Button';
-import { useThemeColors } from '@/app/contexts/ThemeColors';
-import ActionSheetThemed from './ActionSheetThemed';
 import { ActionSheetRef } from 'react-native-actions-sheet';
+
+import ActionSheetThemed from './ActionSheetThemed';
+import { Button } from './Button';
+import Icon from './Icon';
 import ThemedText from './ThemedText';
-import { router } from 'expo-router';
+
+import { useThemeColors } from '@/app/contexts/ThemeColors';
 
 interface FavoriteProps {
   initialState?: boolean;
@@ -60,42 +62,34 @@ const Favorite: React.FC<FavoriteProps> = ({
           <Icon
             name="Heart"
             size={size}
-            fill={isFavorite ? "red" : 'none'}
-            color={isFavorite ? "red" : colors.icon}
+            fill={isFavorite ? 'red' : 'none'}
+            color={isFavorite ? 'red' : colors.icon}
             strokeWidth={1.8}
           />
         )}
       </Pressable>
 
-      <ActionSheetThemed
-        ref={actionSheetRef}
-        gestureEnabled
-      >
+      <ActionSheetThemed ref={actionSheetRef} gestureEnabled>
         <View className="p-4 pb-6">
-          <ThemedText className="text-lg font-bold mt-4 mb-1 text-left">
+          <ThemedText className="mb-1 mt-4 text-left text-lg font-bold">
             {isFavorite ? 'Added to Favorites' : 'Removed from Favorites'}
           </ThemedText>
 
-          <ThemedText className="text-left mb-6">
+          <ThemedText className="mb-6 text-left">
             {isFavorite
               ? `${productName} has been added to your favorites.`
-              : `${productName} has been removed from your favorites.`
-            }
+              : `${productName} has been removed from your favorites.`}
           </ThemedText>
 
-          <View className="flex-row w-full justify-center">
+          <View className="w-full flex-row justify-center">
             {isFavorite && (
-              <Button
-                title="View Favorites"
-                className="flex-1"
-                onPress={handleViewFavorites}
-              />
+              <Button title="View Favorites" className="flex-1" onPress={handleViewFavorites} />
             )}
 
             <Button
               title="Continue Browsing"
               variant="outline"
-              className={isFavorite ? "ml-3 px-6" : "px-6"}
+              className={isFavorite ? 'ml-3 px-6' : 'px-6'}
               onPress={() => actionSheetRef.current?.hide()}
             />
           </View>
@@ -105,4 +99,6 @@ const Favorite: React.FC<FavoriteProps> = ({
   );
 };
 
-export default Favorite; 
+// Support both named and default imports
+export { Favorite };
+export default Favorite;
