@@ -12,16 +12,18 @@
     },
     "preview": {
       "env": {
-  "EXPO_PUBLIC_OPENAI_API_KEY": "https://api.openai.com",
-  "EXPO_PUBLIC_SUPABASE_URL": "https://oycjgvhhobjzoohjlqmx.supabase.co"
-},
+        "EXPO_PUBLIC_OPENAI_API_URL": "https://api.openai.com",
+        "EXPO_PUBLIC_OPENAI_API_KEY": "",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://oycjgvhhobjzoohjlqmx.supabase.co"
+      },
       "distribution": "internal"
     },
     "production": {
-     "env": {
-  "EXPO_PUBLIC_OPENAI_API_URL": "https://api.openai.com",
-  "EXPO_PUBLIC_SUPABASE_URL": "https://oycjgvhhobjzoohjlqmx.supabase.co"
-},
+      "env": {
+        "EXPO_PUBLIC_OPENAI_API_URL": "https://api.openai.com",
+        "EXPO_PUBLIC_OPENAI_API_KEY": "",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://oycjgvhhobjzoohjlqmx.supabase.co"
+      },
       "autoIncrement": true
       
     }
